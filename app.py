@@ -35,11 +35,11 @@ def process():
     aligned_image = align_face(image)
 
     image_outputs = []
-    image_outputs.append(upload_image(aligned_image))
+    image_outputs.append(upload_image(aligned_image, bucket))
 
     if options.get("remove_background", False):
         image, image_mask = remove_background(aligned_image)
-        image_outputs.append(upload_image(image_mask))
+        image_outputs.append(upload_image(image_mask, bucket))
 
     new_background = Image.new("RGBA", image.size, (255, 255, 255, 255))
     image = place_on_new_background(image, new_background).convert("RGB")
@@ -48,20 +48,20 @@ def process():
     if mask_face is None or mask_clothes is None:
         return jsonify({'error': 'No face detected, create mask failed'}), 400
 
-    image_outputs.append(upload_image(mask_clothes))
-    image_outputs.append(upload_image(mask_face))
+    image_outputs.append(upload_image(mask_clothes, bucket))
+    image_outputs.append(upload_image(mask_face, bucket))
 
     inpainted_image = inpaint_image(image, mask_clothes, form_data['seek'], False)
     if inpainted_image is None:
         return jsonify({'error': 'Failed to inpaint image'}), 500
 
-    image_outputs.append(upload_image(inpainted_image))
+    image_outputs.append(upload_image(inpainted_image, bucket))
 
     inpainted_image = inpaint_image(inpainted_image, mask_clothes, form_data['seek'], True)
     if inpainted_image is None:
         return jsonify({'error': 'Failed to inpaint image'}), 500
 
-    image_outputs.append(upload_image(inpainted_image))
+    image_outputs.append(upload_image(inpainted_image, bucket))
 
     return jsonify({'imageUrl': image_outputs})
 

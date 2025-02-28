@@ -20,11 +20,15 @@ def remove_background(image):
         print(f"Error removing background: {e}")
         return None, None
 
+
+
 def place_on_new_background(foreground, new_background):
     new_background = new_background.resize(foreground.size, Image.Resampling.LANCZOS).convert("RGBA")
     return Image.alpha_composite(new_background, foreground)
 
-def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
+
+
+def align_face(image, aspect_ratio=(3, 4), face_ratio=0.3):
     try:
         image_np = np.array(image)
         gray = cv2.cvtColor(image_np, cv2.COLOR_RGB2GRAY)
@@ -34,60 +38,41 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
             print("No face detected.")
             return image
 
-        face = min(faces, key=lambda f: abs(f.center().x - gray.shape[1] // 2))
-
+        face = faces[0]
         landmarks = landmark_predictor(gray, face)
         left_eye = np.array([landmarks.part(36).x, landmarks.part(36).y])
         right_eye = np.array([landmarks.part(45).x, landmarks.part(45).y])
 
         delta_x = right_eye[0] - left_eye[0]
         delta_y = right_eye[1] - left_eye[1]
-        angle = np.degrees(np.arctan2(delta_y, delta_x))
+        angle = np.arctan2(delta_y, delta_x) * 180.0 / np.pi
+        print(f"Left Eye: {left_eye}, Right Eye: {right_eye}, Angle: {angle}")
 
-        eye_center = tuple(map(int, ((left_eye + right_eye) / 2)))
-        rotation_matrix = cv2.getRotationMatrix2D(eye_center, angle, 1.0)
+        center = tuple(map(int, ((left_eye + right_eye) / 2)))
+        rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
         aligned_image = cv2.warpAffine(image_np, rotation_matrix, (image_np.shape[1], image_np.shape[0]))
 
-        rotated_gray = cv2.cvtColor(aligned_image, cv2.COLOR_RGB2GRAY)
-        rotated_faces = face_detector(rotated_gray)
-        if len(rotated_faces) == 0:
-            print("Face lost after rotation.")
-            return image
+        x, y, w, h = face.left(), face.top(), face.width(), face.height()
 
-        rotated_face = min(rotated_faces, key=lambda f: abs(f.center().x - rotated_gray.shape[1] // 2))
-
-        rotated_landmarks = landmark_predictor(rotated_gray, rotated_face)
-        left_eye_y = rotated_landmarks.part(36).y
-        right_eye_y = rotated_landmarks.part(45).y
-        eye_center_y = (left_eye_y + right_eye_y) // 2
-
-        img_h, img_w = aligned_image.shape[:2]
-        move_x = img_w // 2 - (x + w // 2)
-        target_eye_y = int((2/3) * (img_h - eye_center_y))
-        move_y = target_eye_y - eye_center_y
-        translation_matrix = np.float32([[1, 0, move_x], [0, 1, move_y]])
-        aligned_image = cv2.warpAffine(aligned_image, translation_matrix, (img_w, img_h))
-
-        target_eye_y = img_h / 3
-        eye_shift_y = target_eye_y - eye_center_y
-        translation_matrix = np.float32([[1, 0, 0], [0, 1, eye_shift_y]])
-        aligned_image = cv2.warpAffine(aligned_image, translation_matrix, (img_w, img_h))
-
-        target_height = img_h / face_ratio
+        target_height = h / face_ratio
         target_width = target_height * (aspect_ratio[0] / aspect_ratio[1])
-        center_x = img_w // 2
+
+        center_x, center_y = x + w // 2, y + h // 2
         crop_x1 = max(int(center_x - target_width // 2), 0)
-        crop_x2 = min(int(center_x + target_width // 2), img_w)
-        crop_y1 = max(int(target_eye_y - target_height / 3), 0)
-        crop_y2 = min(int(crop_y1 + target_height), img_h)
+        crop_y1 = max(int(center_y - target_height // 2), 0)
+        crop_x2 = min(int(center_x + target_width // 2), image_np.shape[1])
+        crop_y2 = min(int(center_y + target_height // 2), image_np.shape[0])
 
         cropped_image = aligned_image[crop_y1:crop_y2, crop_x1:crop_x2]
-        return Image.fromarray(cropped_image)
+        cropped_image_pil = Image.fromarray(cropped_image)
+
+        return cropped_image_pil
     except Exception as e:
         print(f"Error in face alignment: {e}")
-        import traceback
         traceback.print_exc()
         return image
+
+
 
 def process_image(image, image_mask):
     try:
@@ -99,8 +84,12 @@ def process_image(image, image_mask):
         traceback.print_exc()
         return None, None, None
 
+
+
 def generate_random_filename(extension, length=10):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length)) + extension
+
+
 
 def inpaint(image, mask, prompt, negative_prompt, seek):
     try:
@@ -126,6 +115,8 @@ def inpaint(image, mask, prompt, negative_prompt, seek):
         print(f"Error during inpainting: {e}")
         return None
 
+
+
 def generate_inpainting_prompt(IsGenFace=True):
     if IsGenFace:
         base_prompt = "Professional passport-style portrait, even lighting, flawless and smooth skin, sharp and well-defined facial features, natural skin tone, high detail, well-groomed hair, forehead fully visible, ears slightly visible, neutral expression, straight posture, clean background, high resolution, studio lighting, formal appearance."
@@ -139,6 +130,8 @@ def generate_inpainting_prompt(IsGenFace=True):
         )
 
     return base_prompt, negative_prompt
+
+
 
 def generate_face_lower_mask(image, image_mask):
     try:
