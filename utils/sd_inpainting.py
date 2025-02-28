@@ -30,8 +30,6 @@ def inpaint(image, mask, prompt, negative_prompt, seek):
         return None
     
 
-
-
 def generate_inpainting_prompt(IsGenFace=True):
     if IsGenFace:
         base_prompt = "Professional passport-style portrait, even lighting, flawless and smooth skin, sharp and well-defined facial features, natural skin tone, high detail, well-groomed hair, forehead fully visible, ears slightly visible, neutral expression, straight posture, clean background, high resolution, studio lighting, formal appearance."

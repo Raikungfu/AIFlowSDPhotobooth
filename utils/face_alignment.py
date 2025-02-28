@@ -4,6 +4,7 @@ from PIL import Image
 from utils.face_detection import face_detector, landmark_predictor
 import traceback
 
+
 def align_face(image, aspect_ratio=(3, 4), face_ratio=0.3):
     try:
         image_np = np.array(image)

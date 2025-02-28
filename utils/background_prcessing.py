@@ -13,7 +13,6 @@ def remove_background(image):
         return None, None
 
 
-
 def place_on_new_background(foreground, new_background):
     new_background = new_background.resize(foreground.size, Image.Resampling.LANCZOS).convert("RGBA")
     return Image.alpha_composite(new_background, foreground)

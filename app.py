@@ -1,25 +1,21 @@
-import dlib
 from flask import Flask, request, jsonify
 import os
 import json
 from flask_cors import CORS
 from threading import Thread
-from utils.image_processing import (
-    remove_background,
-    place_on_new_background,
-    align_face,
-    generate_face_lower_mask,
-)
+from utils.background_prcessing import place_on_new_background, remove_background
+from utils.face_alignment import align_face
 from utils.firebase_utils import (
     initialize_firebase
 )
-from utils.image_upload import upload_image, inpaint_image
+from utils.image_upload import refine_with_depth2img_image, upload_image, inpaint_image
 from PIL import Image
+
+from utils.masks import generate_face_lower_mask
 
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
-
 
 
 @app.route('/process_image', methods=['POST'])
@@ -51,20 +47,44 @@ def process():
     image_outputs.append(upload_image(mask_clothes, bucket))
     image_outputs.append(upload_image(mask_face, bucket))
 
-    inpainted_image = inpaint_image(image, mask_clothes, form_data['seek'], False)
-    if inpainted_image is None:
+    inpainted_image1 = inpaint_image(image, mask_face, form_data['seek'], False)
+    if inpainted_image1 is None:
         return jsonify({'error': 'Failed to inpaint image'}), 500
 
-    image_outputs.append(upload_image(inpainted_image, bucket))
+    image_outputs.append(upload_image(inpainted_image1, bucket))
 
-    inpainted_image = inpaint_image(inpainted_image, mask_clothes, form_data['seek'], True)
-    if inpainted_image is None:
+    inpainted_image2 = inpaint_image(image, mask_clothes, form_data['seek'], False)
+    if inpainted_image2 is None:
         return jsonify({'error': 'Failed to inpaint image'}), 500
 
-    image_outputs.append(upload_image(inpainted_image, bucket))
+    image_outputs.append(upload_image(inpainted_image2, bucket))
+
+    inpainted_image3 = inpaint_image(image, mask_combined, form_data['seek'], True)
+    if inpainted_image3 is None:
+        return jsonify({'error': 'Failed to inpaint image'}), 500
+    
+    image_outputs.append(upload_image(inpainted_image3, bucket))
+    
+    depth2img_image1 = refine_with_depth2img_image(inpainted_image1, form_data['seek'], True)
+    if depth2img_image1 is None:
+        return jsonify({'error': 'Failed to inpaint image'}), 500
+    
+    image_outputs.append(upload_image(depth2img_image1, bucket))
+    
+    depth2img_image2 = refine_with_depth2img_image(inpainted_image2, form_data['seek'], True)
+    if depth2img_image2 is None:
+        return jsonify({'error': 'Failed to inpaint image'}), 500
+
+    image_outputs.append(upload_image(depth2img_image2, bucket))
+
+    
+    depth2img_image3 = refine_with_depth2img_image(inpainted_image3, form_data['seek'], True)
+    if depth2img_image3 is None:
+        return jsonify({'error': 'Failed to inpaint image'}), 500
+
+    image_outputs.append(upload_image(depth2img_image3, bucket))
 
     return jsonify({'imageUrl': image_outputs})
-
 
 
 def start_pagekite():

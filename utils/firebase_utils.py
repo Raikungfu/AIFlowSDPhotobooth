@@ -2,7 +2,9 @@ import firebase_admin
 from firebase_admin import credentials, storage
 import os
 
+
 firebase_app = None
+
 
 def initialize_firebase(cred_path, firebaseConfig):
     global firebase_app
@@ -15,6 +17,7 @@ def initialize_firebase(cred_path, firebaseConfig):
         firebase_app = firebase_admin.get_app()
     
     return storage.bucket()
+
 
 def upload_to_firebase_storage(file_path, folder_name, bucket):
     destination_blob_name = f"{folder_name}/{os.path.basename(file_path)}"
