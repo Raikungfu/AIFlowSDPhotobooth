@@ -8,7 +8,7 @@ from utils.image_processing import (
     remove_background,
     place_on_new_background,
     align_face,
-    process_image
+    generate_face_lower_mask,
 )
 from utils.firebase_utils import (
     initialize_firebase
@@ -44,7 +44,7 @@ def process():
     new_background = Image.new("RGBA", image.size, (255, 255, 255, 255))
     image = place_on_new_background(image, new_background).convert("RGB")
 
-    mask_face, mask_clothes = process_image(image, image_mask)
+    mask_face, mask_clothes, mask_combined = generate_face_lower_mask(image, image_mask)
     if mask_face is None or mask_clothes is None:
         return jsonify({'error': 'No face detected, create mask failed'}), 400
 
