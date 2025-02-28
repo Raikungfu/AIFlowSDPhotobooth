@@ -71,13 +71,13 @@ def start_pagekite():
     os.system("python3 pagekite.py 5000 raiyugi.pagekite.me")
 
 
-
 if __name__ == '__main__':
     cred_path = 'firebase/social-networking-8c187-firebase-adminsdk-cbnj3-5738be94d4.json'
     firebaseConfig = {
         'storageBucket': "social-networking-8c187.appspot.com"
     }
+    
+    bucket = initialize_firebase(cred_path, firebaseConfig)
 
-    initialize_firebase(cred_path, firebaseConfig)
     Thread(target=start_pagekite).start()
     app.run(host='0.0.0.0', port=5000, threaded=True)
