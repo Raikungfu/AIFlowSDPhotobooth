@@ -3,6 +3,8 @@ import os
 import json
 from flask_cors import CORS
 from threading import Thread
+from enums.prompt_type import PromptType
+from enums.user_info import Gender
 from utils.background_prcessing import place_on_new_background, remove_background
 from utils.face_alignment import align_face
 from utils.firebase_utils import (
@@ -47,38 +49,38 @@ def process():
     image_outputs.append(upload_image(mask_clothes, bucket))
     image_outputs.append(upload_image(mask_face, bucket))
 
-    inpainted_image1 = inpaint_image(image, mask_face, form_data['seek'], False)
+    inpainted_image1 = inpaint_image(image, mask_face, form_data['seek'], PromptType.FACE, Gender(form_data['gender'].lower()))
     if inpainted_image1 is None:
         return jsonify({'error': 'Failed to inpaint image'}), 500
 
     image_outputs.append(upload_image(inpainted_image1, bucket))
 
-    inpainted_image2 = inpaint_image(image, mask_clothes, form_data['seek'], False)
+    inpainted_image2 = inpaint_image(image, mask_clothes, form_data['seek'], PromptType.CLOTHES, Gender(form_data['gender'].lower()))
     if inpainted_image2 is None:
         return jsonify({'error': 'Failed to inpaint image'}), 500
 
     image_outputs.append(upload_image(inpainted_image2, bucket))
 
-    inpainted_image3 = inpaint_image(image, mask_combined, form_data['seek'], True)
+    inpainted_image3 = inpaint_image(image, mask_combined, form_data['seek'], PromptType.COMBINE, Gender(form_data['gender'].lower()))
     if inpainted_image3 is None:
         return jsonify({'error': 'Failed to inpaint image'}), 500
     
     image_outputs.append(upload_image(inpainted_image3, bucket))
     
-    depth2img_image1 = refine_with_depth2img_image(inpainted_image1, form_data['seek'], True)
+    depth2img_image1 = refine_with_depth2img_image(inpainted_image1, form_data['seek'], PromptType.FACE, Gender(form_data['gender'].lower()))
     if depth2img_image1 is None:
         return jsonify({'error': 'Failed to inpaint image'}), 500
     
     image_outputs.append(upload_image(depth2img_image1, bucket))
     
-    depth2img_image2 = refine_with_depth2img_image(inpainted_image2, form_data['seek'], True)
+    depth2img_image2 = refine_with_depth2img_image(inpainted_image2, form_data['seek'], PromptType.CLOTHES, Gender(form_data['gender'].lower()))
     if depth2img_image2 is None:
         return jsonify({'error': 'Failed to inpaint image'}), 500
 
     image_outputs.append(upload_image(depth2img_image2, bucket))
 
     
-    depth2img_image3 = refine_with_depth2img_image(inpainted_image3, form_data['seek'], True)
+    depth2img_image3 = refine_with_depth2img_image(inpainted_image3, form_data['seek'], PromptType.COMBINE, Gender(form_data['gender'].lower()))
     if depth2img_image3 is None:
         return jsonify({'error': 'Failed to inpaint image'}), 500
 

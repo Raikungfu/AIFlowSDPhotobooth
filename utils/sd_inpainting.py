@@ -1,4 +1,5 @@
 import torch
+from enums.prompt_type import PromptType
 from utils.masks import expand_mask
 from utils.stable_diffusion import inpainting_pipeline, depth_pipeline
 
@@ -28,21 +29,7 @@ def inpaint(image, mask, prompt, negative_prompt, seek):
     except Exception as e:
         print(f"Error during inpainting: {e}")
         return None
-    
 
-def generate_inpainting_prompt(IsGenFace=True):
-    if IsGenFace:
-        base_prompt = "Professional passport-style portrait, even lighting, flawless and smooth skin, sharp and well-defined facial features, natural skin tone, high detail, well-groomed hair, forehead fully visible, ears slightly visible, neutral expression, straight posture, clean background, high resolution, studio lighting, formal appearance."
-        negative_prompt = "Messy hair, forehead covered, hair over face, shadows, acne, blemishes, wrinkles, scars, distorted features, poor details, unnatural skin tone, dark patches, extreme makeup, blurry image, bad quality, low resolution, exaggerated expressions, artistic filters."
-    else:
-        base_prompt = (
-            "Professional passport-style portrait, formal attire, professional suit, white or light-colored collared shirt, neutral tie, clean and polished appearance, well-fitted clothing, natural fabric texture, studio lighting, high detail, 8k resolution, realistic folds and shadows, professional portrait style"
-        )
-        negative_prompt = (
-            "casual wear, t-shirts, logos, patterns, bright colors, excessive accessories, low resolution, distorted, unrealistic clothing texture, blurry, pixelated, fantasy elements, overly dramatic lighting, unnatural colors, unprofessional look"
-        )
-
-    return base_prompt, negative_prompt
 
 
 def refine_with_depth2img(image, prompt, negative_prompt, seek):
@@ -61,3 +48,34 @@ def refine_with_depth2img(image, prompt, negative_prompt, seek):
     except Exception as e:
         print(f"Error during depth-based refinement: {e}")
         return image
+
+
+
+def generate_id_photo_prompt(prompt_type=PromptType.COMBINE, gender="male"):
+    base_prompt = ""
+    
+    if prompt_type == PromptType.FACE or prompt_type == PromptType.COMBINE:
+        base_prompt += (
+            "Professional ID photo, studio-quality lighting, neutral white background, high-resolution, "
+            "symmetrical facial features, smooth skin, well-groomed hair, clean and sharp details, "
+            "natural skin tone, balanced lighting, no harsh shadows, straight posture, neutral facial expression, "
+            "ears slightly visible, forehead fully visible, no hair covering the face, high-detail 8K resolution."
+        )
+
+    if prompt_type == PromptType.CLOTHES or prompt_type == PromptType.COMBINE:
+        if base_prompt:
+            base_prompt += " "
+        base_prompt += "Professional ID photo, clean and professional look, realistic fabric texture, "
+        
+        if gender.lower() == "male":
+            base_prompt += "well-fitted suit, light-colored collared shirt, neutral tie, polished and elegant appearance."
+        elif gender.lower() == "female":
+            base_prompt += "formal blouse or professional suit, subtle and natural makeup, minimal accessories, polished and elegant appearance."
+    
+    negative_prompt = (
+        "Casual wear, bright colors, patterns, excessive accessories, messy hair, artistic filters, "
+        "exaggerated makeup, unnatural skin tone, harsh shadows, wrinkles, scars, acne, unrealistic clothing texture, "
+        "low resolution, distorted features, blurry, pixelated, fantasy elements, overly dramatic lighting, unprofessional look."
+    )
+
+    return base_prompt, negative_prompt
