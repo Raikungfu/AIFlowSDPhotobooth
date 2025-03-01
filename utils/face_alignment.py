@@ -17,6 +17,7 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
             return image
 
         face = min(faces, key=lambda f: abs(f.center().x - gray.shape[1] // 2))
+        x, y, w, h = (face.left(), face.top(), face.width(), face.height())
 
         landmarks = landmark_predictor(gray, face)
         left_eye = np.array([landmarks.part(36).x, landmarks.part(36).y])

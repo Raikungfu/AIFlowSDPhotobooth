@@ -17,16 +17,16 @@ def generate_face_lower_mask(image, image_mask):
 
         face = faces[0]
         landmarks = landmark_predictor(gray, face)
-        lower_lip_y = landmarks.part(57).y
+        upper_lip_y = landmarks.part(51).y
         jaw_points = np.array([[landmarks.part(i).x, landmarks.part(i).y] for i in range(0, 17)])
 
         mask_clothes_np = np.zeros_like(image_mask, dtype=np.uint8)
-        mask_clothes_np[lower_lip_y:, :] = 255
+        mask_clothes_np[upper_lip_y:, :] = 255
         cv2.fillPoly(mask_clothes_np, [jaw_points], (0, 0, 0))
         mask_clothes = Image.fromarray(mask_clothes_np)
 
         mask_face_np = np.array(image_mask, dtype=np.uint8)
-        mask_face_np[lower_lip_y:, :] = 0
+        mask_face_np[upper_lip_y:, :] = 0
         cv2.fillPoly(mask_face_np, [jaw_points], (255, 255, 255))
         mask_face = Image.fromarray(mask_face_np)
 
@@ -39,7 +39,6 @@ def generate_face_lower_mask(image, image_mask):
         traceback.print_exc()
         return None, None, None
 
-    
 
 
 def expand_mask(mask, kernel_size=15, iterations=2):

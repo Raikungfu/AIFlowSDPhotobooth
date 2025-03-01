@@ -66,25 +66,6 @@ def process():
         return jsonify({'error': 'Failed to inpaint image'}), 500
     
     image_outputs.append(upload_image(inpainted_image3, bucket))
-    
-    depth2img_image1 = refine_with_depth2img_image(inpainted_image1, form_data['seek'], PromptType.FACE, Gender(form_data['gender'].lower()))
-    if depth2img_image1 is None:
-        return jsonify({'error': 'Failed to inpaint image'}), 500
-    
-    image_outputs.append(upload_image(depth2img_image1, bucket))
-    
-    depth2img_image2 = refine_with_depth2img_image(inpainted_image2, form_data['seek'], PromptType.CLOTHES, Gender(form_data['gender'].lower()))
-    if depth2img_image2 is None:
-        return jsonify({'error': 'Failed to inpaint image'}), 500
-
-    image_outputs.append(upload_image(depth2img_image2, bucket))
-
-    
-    depth2img_image3 = refine_with_depth2img_image(inpainted_image3, form_data['seek'], PromptType.COMBINE, Gender(form_data['gender'].lower()))
-    if depth2img_image3 is None:
-        return jsonify({'error': 'Failed to inpaint image'}), 500
-
-    image_outputs.append(upload_image(depth2img_image3, bucket))
 
     return jsonify({'imageUrl': image_outputs})
 

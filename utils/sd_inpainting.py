@@ -32,26 +32,6 @@ def inpaint(image, mask, prompt, negative_prompt, seek):
         return None
 
 
-
-def refine_with_depth2img(image, prompt, negative_prompt, seek):
-    try:
-        with torch.no_grad():
-            result = depth_pipeline(
-                prompt=prompt,
-                negative_prompt=negative_prompt,
-                image=image,
-                strength=0.5,
-                guidance_scale=7.5,
-                num_inference_steps=50,
-                generator=torch.Generator("cpu").manual_seed(int(seek))
-            ).images[0]
-        return result
-    except Exception as e:
-        print(f"Error during depth-based refinement: {e}")
-        return image
-
-
-
 def generate_id_photo_prompt(prompt_type=PromptType.COMBINE, gender=Gender.Male):
     base_prompt = ""
     
