@@ -1,5 +1,6 @@
 import torch
 from enums.prompt_type import PromptType
+from enums.user_info import Gender
 from utils.masks import expand_mask
 from utils.stable_diffusion import inpainting_pipeline, depth_pipeline
 
@@ -51,7 +52,7 @@ def refine_with_depth2img(image, prompt, negative_prompt, seek):
 
 
 
-def generate_id_photo_prompt(prompt_type=PromptType.COMBINE, gender="male"):
+def generate_id_photo_prompt(prompt_type=PromptType.COMBINE, gender=Gender.Male):
     base_prompt = ""
     
     if prompt_type == PromptType.FACE or prompt_type == PromptType.COMBINE:
@@ -67,9 +68,9 @@ def generate_id_photo_prompt(prompt_type=PromptType.COMBINE, gender="male"):
             base_prompt += " "
         base_prompt += "Professional ID photo, clean and professional look, realistic fabric texture, "
         
-        if gender.lower() == "male":
+        if gender == Gender.Male:
             base_prompt += "well-fitted suit, light-colored collared shirt, neutral tie, polished and elegant appearance."
-        elif gender.lower() == "female":
+        elif gender == Gender.Female:
             base_prompt += "formal blouse or professional suit, subtle and natural makeup, minimal accessories, polished and elegant appearance."
     
     negative_prompt = (
