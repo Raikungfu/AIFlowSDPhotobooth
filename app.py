@@ -7,12 +7,9 @@ from enums.prompt_type import PromptType
 from enums.user_info import Gender
 from utils.background_prcessing import place_on_new_background, remove_background
 from utils.face_alignment import align_face
-from utils.firebase_utils import (
-    initialize_firebase
-)
-from utils.image_upload import refine_with_depth2img_image, upload_image, inpaint_image
+from utils.firebase_utils import initialize_firebase
+from utils.image_upload import upload_image, inpaint_image
 from PIL import Image
-
 from utils.masks import generate_face_lower_mask
 
 
@@ -25,49 +22,58 @@ def process():
     if 'file' not in request.files:
         return jsonify({'error': 'Missing file'}), 400
 
-    image_file = request.files['file']
-    options = json.loads(request.form.get('options', '{}'))
-    form_data = json.loads(request.form.get('personal_info', None))
+    try:
+        image_file = request.files['file']
+        options = json.loads(request.form.get('options', '{}'))
+        form_data = json.loads(request.form.get('personal_info', '{}'))
 
-    image = Image.open(image_file).convert("RGBA")
-    aligned_image = align_face(image)
+        edit_strength = form_data.get('edit_strength', {'face': 1.0, 'clothes': 1.0, 'combine': 1.0})
+        guidance_scale = form_data.get('guidance_scale', {'face': 7.5, 'clothes': 7.5, 'combine': 7.5})
 
-    image_outputs = []
-    image_outputs.append(upload_image(aligned_image, bucket))
+        seek_value = form_data.get('seek', 0)
+        gender = Gender(form_data.get('gender', 'male').lower())
 
-    if options.get("remove_background", False):
-        image, image_mask = remove_background(aligned_image)
-        image_outputs.append(upload_image(image_mask, bucket))
+        image = Image.open(image_file).convert("RGBA")
+        aligned_image = align_face(image)
+        image_outputs = [upload_image(aligned_image, bucket)]
 
-    new_background = Image.new("RGBA", image.size, (255, 255, 255, 255))
-    image = place_on_new_background(image, new_background).convert("RGB")
+        if options.get("remove_background"):
+            image, image_mask = remove_background(aligned_image)
+            image_outputs.append(upload_image(image_mask, bucket))
+        else:
+            image_mask = None
 
-    mask_face, mask_clothes, mask_combined = generate_face_lower_mask(image, image_mask)
-    if mask_face is None or mask_clothes is None:
-        return jsonify({'error': 'No face detected, create mask failed'}), 400
+        if image_mask:
+            new_background = Image.new("RGBA", image.size, (255, 255, 255, 255))
+            image = place_on_new_background(image, new_background).convert("RGB")
 
-    image_outputs.append(upload_image(mask_clothes, bucket))
-    image_outputs.append(upload_image(mask_face, bucket))
+        mask_face, mask_clothes, mask_combined = generate_face_lower_mask(image, image_mask)
+        if not mask_face or not mask_clothes:
+            return jsonify({'error': 'No face detected, create mask failed'}), 400
 
-    inpainted_image1 = inpaint_image(image, mask_face, form_data['seek'], PromptType.FACE, Gender(form_data['gender'].lower()))
-    if inpainted_image1 is None:
-        return jsonify({'error': 'Failed to inpaint image'}), 500
+        image_outputs.extend([
+            upload_image(mask_clothes, bucket),
+            upload_image(mask_face, bucket)
+        ])
 
-    image_outputs.append(upload_image(inpainted_image1, bucket))
+        edit_types = {
+            PromptType.FACE: (mask_face, edit_strength.get('face', 1.0), guidance_scale.get('face', 7.5)),
+            PromptType.CLOTHES: (mask_clothes, edit_strength.get('clothes', 1.0), guidance_scale.get('clothes', 7.5)),
+            PromptType.COMBINE: (mask_combined, edit_strength.get('combine', 1.0), guidance_scale.get('combine', 7.5))
+        }
 
-    inpainted_image2 = inpaint_image(image, mask_clothes, form_data['seek'], PromptType.CLOTHES, Gender(form_data['gender'].lower()))
-    if inpainted_image2 is None:
-        return jsonify({'error': 'Failed to inpaint image'}), 500
+        for edit_type, (mask, strength, scale) in edit_types.items():
+            inpainted_image = inpaint_image(image, mask, seek_value, edit_type, gender, strength, scale)
+            if inpainted_image:
+                image_outputs.append(upload_image(inpainted_image, bucket))
+            else:
+                return jsonify({'error': f'Failed to inpaint {edit_type.name.lower()}'}), 500
 
-    image_outputs.append(upload_image(inpainted_image2, bucket))
+        return jsonify({'imageUrl': image_outputs})
 
-    inpainted_image3 = inpaint_image(image, mask_combined, form_data['seek'], PromptType.COMBINE, Gender(form_data['gender'].lower()))
-    if inpainted_image3 is None:
-        return jsonify({'error': 'Failed to inpaint image'}), 500
-    
-    image_outputs.append(upload_image(inpainted_image3, bucket))
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-    return jsonify({'imageUrl': image_outputs})
 
 
 def start_pagekite():
