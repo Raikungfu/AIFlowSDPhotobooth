@@ -5,6 +5,7 @@ from flask_cors import CORS
 from threading import Thread
 from enums.prompt_type import PromptType
 from enums.user_info import Gender
+from utils import optimize_image
 from utils.background_prcessing import place_on_new_background, remove_background
 from utils.face_alignment import align_face
 from utils.firebase_utils import initialize_firebase
@@ -37,8 +38,11 @@ def process():
         aligned_image = align_face(image)
         image_outputs = [upload_image(aligned_image, bucket)]
 
+        optimized_image = optimize_image(aligned_image)
+        image_outputs = [upload_image(optimized_image, bucket)]
+
         if options.get("remove_background"):
-            image, image_mask = remove_background(aligned_image)
+            image, image_mask = remove_background(optimized_image)
             image_outputs.append(upload_image(image_mask, bucket))
         else:
             image_mask = None

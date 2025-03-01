@@ -4,7 +4,7 @@ from utils.sd_inpainting import generate_id_photo_prompt, inpaint
 
 
 def upload_image(image, bucket):
-    output_filename = generate_random_filename('.png')
+    output_filename = generate_random_filename('.jpeg')
     output_path = f'/tmp/{output_filename}'
     image.save(output_path)
     return upload_to_firebase_storage(output_path, 'processed_images', bucket)

@@ -41,8 +41,11 @@ def generate_face_lower_mask(image, image_mask):
 
 
 
-def expand_mask(mask, kernel_size=15, iterations=2):
+def expand_mask(mask, kernel_size=15, iterations=2, threshold=128):
     kernel = np.ones((kernel_size, kernel_size), np.uint8)
     mask_np = np.array(mask.convert("L"))
     mask_expanded = cv2.dilate(mask_np, kernel, iterations=iterations)
+    mask_expanded = cv2.dilate(mask_np, kernel, iterations=iterations)
+
+    _, mask_binary = cv2.threshold(mask_expanded, threshold, 255, cv2.THRESH_BINARY)
     return Image.fromarray(mask_expanded)

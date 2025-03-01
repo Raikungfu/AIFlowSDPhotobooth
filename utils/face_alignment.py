@@ -26,6 +26,8 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
         delta_x = right_eye[0] - left_eye[0]
         delta_y = right_eye[1] - left_eye[1]
         angle = np.degrees(np.arctan2(delta_y, delta_x))
+        
+        angle = min(max(angle, -10), 10)  
 
         eye_center = tuple(map(int, ((left_eye + right_eye) / 2)))
         rotation_matrix = cv2.getRotationMatrix2D(eye_center, angle, 1.0)
@@ -46,19 +48,16 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
 
         img_h, img_w = aligned_image.shape[:2]
         move_x = img_w // 2 - (x + w // 2)
-        target_eye_y = int((2/3) * (img_h - eye_center_y))
+        target_eye_y = int((2/5) * img_h)
         move_y = target_eye_y - eye_center_y
+        
         translation_matrix = np.float32([[1, 0, move_x], [0, 1, move_y]])
-        aligned_image = cv2.warpAffine(aligned_image, translation_matrix, (img_w, img_h))
-
-        target_eye_y = img_h / 3
-        eye_shift_y = target_eye_y - eye_center_y
-        translation_matrix = np.float32([[1, 0, 0], [0, 1, eye_shift_y]])
         aligned_image = cv2.warpAffine(aligned_image, translation_matrix, (img_w, img_h))
 
         target_height = img_h / face_ratio
         target_width = target_height * (aspect_ratio[0] / aspect_ratio[1])
         center_x = img_w // 2
+        
         crop_x1 = max(int(center_x - target_width // 2), 0)
         crop_x2 = min(int(center_x + target_width // 2), img_w)
         crop_y1 = max(int(target_eye_y - target_height / 3), 0)
@@ -66,6 +65,7 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
 
         cropped_image = aligned_image[crop_y1:crop_y2, crop_x1:crop_x2]
         return Image.fromarray(cropped_image)
+
     except Exception as e:
         print(f"Error in face alignment: {e}")
         import traceback
