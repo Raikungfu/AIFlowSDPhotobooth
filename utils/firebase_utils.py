@@ -1,7 +1,8 @@
 import firebase_admin
 from firebase_admin import credentials, storage
 import os
-
+import random
+import string
 
 firebase_app = None
 
@@ -27,3 +28,7 @@ def upload_to_firebase_storage(file_path, folder_name, bucket):
     public_url = f"https://firebasestorage.googleapis.com/v0/b/{bucket.name}/o/{folder_name}%2F{os.path.basename(file_path)}?alt=media"
     print(f"Uploaded to Firebase: {public_url}")
     return public_url
+
+
+def generate_random_filename(extension, length=10):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length)) + extension

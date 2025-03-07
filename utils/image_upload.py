@@ -1,5 +1,4 @@
-from utils.image_processing import generate_random_filename
-from utils.firebase_utils import upload_to_firebase_storage
+from utils.firebase_utils import generate_random_filename, upload_to_firebase_storage
 from utils.sd_inpainting import generate_id_photo_prompt, inpaint
 
 
