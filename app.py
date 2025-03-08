@@ -1,90 +1,56 @@
-import requests
-import io
 import json
 import pika
-from flask_cors import CORS
 from threading import Thread
-from flask import Flask, jsonify
-from PIL import Image
-from enums.prompt_type import PromptType
-from enums.user_info import Gender
-from utils.background_prcessing import place_on_new_background, remove_background
-from utils.face_alignment import align_face
+from flask import Flask
 from utils.firebase_utils import initialize_firebase
-from utils.image_upload import upload_image, inpaint_image
-from utils.masks import generate_face_lower_mask
-from utils.optimize_image import optimize_image
+from const.style import QUEUE_NAME, RABBITMQ_URL, REPLY_QUEUE
+from const.config import cred_path, firebaseConfig
+import traceback
+from utils.image_upload import download_image, upload_image
+from flow.photo_style_flow import process_artistic_portrait, process_cartoon, process_fashion_style, process_id_photo, process_vintage
+
+
+STYLE_PROCESSORS = {
+    "id_photo": process_id_photo,
+    "artistic_portrait": process_artistic_portrait,
+    "cartoon": process_cartoon,
+    "vintage": process_vintage,
+    "fashion_style": process_fashion_style,
+}
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+# CORS(app, resources={r"/*": {"origins": "*"}})
 
 
-RABBITMQ_URL = "amqps://gzuozlgd:oFx2YLFVunNoMijR4FFRz97K2n2gA4gr@armadillo.rmq.cloudamqp.com/gzuozlgd"
-QUEUE_NAME = "image_processing_queue"
-REPLY_QUEUE = "image_response_queue"
-
-
-def download_image(image_url):
-    response = requests.get(image_url)
-    if response.status_code == 200:
-        return Image.open(io.BytesIO(response.content)).convert("RGB")
-    return None
-    
-
-def process_image(image_url, correlation_id, options, form_data):
+def process_image(image_url, correlation_id, form_data, bucket):
     try:
         image = download_image(image_url)
         if image is None:
             raise Exception("Invalid image URL")
+        
+        photo_style = form_data.get("photoStyle", "id_photo")
+        processor = STYLE_PROCESSORS.get(photo_style)
+        if not processor:
+            raise Exception(f"Unknown photo style: {photo_style}")
+        
+        processed_images = processor(image, bucket)
 
-        aligned_image = align_face(image)
-        optimized_image = optimize_image(aligned_image)
-        image_outputs = [upload_image(optimized_image, bucket)]
+        if not processed_images:
+            raise Exception("Failed to process image")
+        
+        result = []
 
-        if options.get("remove_background"):
-            image, image_mask = remove_background(optimized_image)
-            image_outputs.append(upload_image(image_mask, bucket))
-        else:
-            image_mask = None
+        for i, img in enumerate(processed_images):
+            processed_url = upload_image(img, bucket)
+            result.append(processed_url)
+            print(f"Processed image {i}: {processed_url}")
 
-        if image_mask:
-            new_background = Image.new("RGBA", image.size, (255, 255, 255, 255))
-            image = place_on_new_background(image, new_background).convert("RGB")
-
-        mask_face, mask_clothes, mask_combined = generate_face_lower_mask(image, image_mask)
-        if not mask_face or not mask_clothes:
-            raise Exception("No face detected, create mask failed")
-
-        image_outputs.extend([
-            upload_image(mask_clothes, bucket),
-            upload_image(mask_face, bucket)
-        ])
-
-        edit_strength = form_data.get('edit_strength', {'face': 1.0, 'clothes': 1.0, 'combine': 1.0})
-        guidance_scale = form_data.get('guidance_scale', {'face': 7.5, 'clothes': 7.5, 'combine': 7.5})
-        seek_value = form_data.get('seek', 0)
-        gender = Gender(form_data.get('gender', 'male').lower())
-
-        edit_types = {
-            PromptType.FACE: (mask_face, edit_strength.get('face', 1.0), guidance_scale.get('face', 7.5)),
-            PromptType.CLOTHES: (mask_clothes, edit_strength.get('clothes', 1.0), guidance_scale.get('clothes', 7.5)),
-            PromptType.COMBINE: (mask_combined, edit_strength.get('combine', 1.0), guidance_scale.get('combine', 7.5))
-        }
-
-        for edit_type, (mask, strength, scale) in edit_types.items():
-            inpainted_image = inpaint_image(image, mask, seek_value, edit_type, gender, strength, scale)
-            if inpainted_image:
-                image_outputs.append(upload_image(inpainted_image, bucket))
-            else:
-                raise Exception(f"Failed to inpaint {edit_type.name.lower()}")
-
-        response = {"CorrelationId": correlation_id, "ProcessedImageUrl": image_outputs}
+        response = {"CorrelationId": correlation_id, "ProcessedImageUrl": result}
         send_response_to_queue(response)
-
     except Exception as e:
         send_response_to_queue({"CorrelationId": correlation_id, "error": str(e)})
+        traceback.print_exc()
         print(f"Error: {e}")
-
 
 
 def send_response_to_queue(response):
@@ -105,14 +71,15 @@ def send_response_to_queue(response):
 
 def callback(ch, method, properties, body):
     message = json.loads(body)
-    image_url = message.get("ImageUrl")
-    correlation_id = message.get("CorrelationId")
-    options = message.get("options", {})
-    form_data = message.get("personal_info", {})
+    print(f"Received: {message}")
+
+    image_url = message.get("imageUrl")
+    correlation_id = message.get("correlationId")
+    form_data = message.get("formData", {})
 
     print(f"Received: {image_url}, CorrelationId: {correlation_id}")
 
-    process_image(image_url, correlation_id, options, form_data)
+    process_image(image_url, correlation_id, form_data, bucket)
 
 
 def start_worker():
@@ -128,13 +95,7 @@ def start_worker():
     channel.start_consuming()
 
 
-
 if __name__ == '__main__':
-    cred_path = 'firebase/social-networking-8c187-firebase-adminsdk-cbnj3-5738be94d4.json'
-    firebaseConfig = {
-        'storageBucket': "social-networking-8c187.appspot.com"
-    }
-    
     bucket = initialize_firebase(cred_path, firebaseConfig)
 
 
