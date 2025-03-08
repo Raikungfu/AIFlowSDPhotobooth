@@ -1,3 +1,4 @@
+import traceback
 import requests
 import io
 import json
@@ -27,7 +28,7 @@ REPLY_QUEUE = "image_response_queue"
 def download_image(image_url):
     response = requests.get(image_url)
     if response.status_code == 200:
-        return Image.open(io.BytesIO(response.content)).convert("RGB")
+        return Image.open(io.BytesIO(response.content)).convert("RGBA")
     return None
     
 
@@ -38,8 +39,10 @@ def process_image(image_url, correlation_id, options, form_data):
             raise Exception("Invalid image URL")
 
         aligned_image = align_face(image)
+        image_outputs = [upload_image(aligned_image, bucket)]
+
         optimized_image = optimize_image(aligned_image)
-        image_outputs = [upload_image(optimized_image, bucket)]
+        image_outputs.append(upload_image(optimized_image, bucket))
 
         if options.get("remove_background"):
             image, image_mask = remove_background(optimized_image)
@@ -62,7 +65,7 @@ def process_image(image_url, correlation_id, options, form_data):
 
         edit_strength = form_data.get('edit_strength', {'face': 1.0, 'clothes': 1.0, 'combine': 1.0})
         guidance_scale = form_data.get('guidance_scale', {'face': 7.5, 'clothes': 7.5, 'combine': 7.5})
-        seek_value = form_data.get('seek', 0)
+        seek_value = int(form_data.get('seek', 0)) if isinstance(form_data.get('seek', 0), (int, str)) else 0
         gender = Gender(form_data.get('gender', 'male').lower())
 
         edit_types = {
@@ -83,6 +86,7 @@ def process_image(image_url, correlation_id, options, form_data):
 
     except Exception as e:
         send_response_to_queue({"CorrelationId": correlation_id, "error": str(e)})
+        traceback.print_exc()
         print(f"Error: {e}")
 
 
