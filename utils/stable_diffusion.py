@@ -1,5 +1,5 @@
 import torch
-from diffusers import StableDiffusionInpaintPipeline, StableDiffusionDepth2ImgPipeline
+from diffusers import StableDiffusionInpaintPipeline
 
 torch.set_num_threads(4)
 
@@ -14,11 +14,3 @@ inpainting_pipeline = StableDiffusionInpaintPipeline.from_pretrained(
 inpainting_pipeline.disable_attention_slicing()
 
 inpainting_pipeline.safety_checker = dummy_checker
-
-depth_pipeline = StableDiffusionDepth2ImgPipeline.from_pretrained(
-   "stabilityai/stable-diffusion-2-depth",
-   torch_dtype=torch.float16,
-).to("cuda")
-
-depth_pipeline.disable_attention_slicing()
-depth_pipeline.safety_checker = dummy_checker
