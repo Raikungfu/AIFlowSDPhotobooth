@@ -33,7 +33,7 @@ def apply_id_photo_effect(image, bucket):
 
         edit_types = {
             PromptType.FACE: (1, mask_face, 0.3, 4.0),
-            PromptType.CLOTHES: (6, mask_clothes, 5, 7.5),
+            PromptType.CLOTHES: (6, mask_clothes, 0.5, 7.5),
             PromptType.COMBINE: (6, mask_combined, 0.3, 4.0)
         }
 
