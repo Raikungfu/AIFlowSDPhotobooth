@@ -42,7 +42,7 @@ def apply_id_photo_effect(image, bucket):
         for edit_type, (number, mask, strength, scale) in edit_types.items():
             base_prompt, negative_prompt = generate_id_photo_prompt(edit_type)
             inpainted_images = inpaint(number, image, mask, base_prompt, negative_prompt, strength, scale)
-            results.append(inpainted_images)
+            results.extend(inpainted_images)
 
         return results
     except Exception as e:
