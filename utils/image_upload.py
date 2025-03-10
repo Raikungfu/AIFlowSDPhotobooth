@@ -1,5 +1,6 @@
+from sd.prompt import generate_id_photo_prompt
 from utils.firebase_utils import generate_random_filename, upload_to_firebase_storage
-from utils.sd_inpainting import generate_id_photo_prompt, inpaint
+from utils.sd_inpainting import inpaint
 
 
 def upload_image(image, bucket):
@@ -9,6 +10,6 @@ def upload_image(image, bucket):
     return upload_to_firebase_storage(output_path, 'processed_images', bucket)
 
 
-def inpaint_image(image, mask_clothes, seek, prompt_type, gender, strength, scale):
-    base_prompt, negative_prompt = generate_id_photo_prompt(prompt_type, gender)
-    return inpaint(image, mask_clothes, base_prompt, negative_prompt, seek, strength, scale)
+def inpaint_image(image, mask_clothes, prompt_type, strength, scale):
+    base_prompt, negative_prompt = generate_id_photo_prompt(prompt_type)
+    return inpaint(image, mask_clothes, base_prompt, negative_prompt, strength, scale)

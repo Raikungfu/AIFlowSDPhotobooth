@@ -32,23 +32,24 @@ def download_image(image_url):
     return None
     
 
-def process_image(image_url, correlation_id, options, form_data):
+def process_image(image_url, correlation_id, form_data):
     try:
+        print(f"Processing image: {image_url}")
+        print(f"Form data: {form_data}")
+        print(f"CorrelationId: {correlation_id}")
         image = download_image(image_url)
         if image is None:
             raise Exception("Invalid image URL")
 
         aligned_image = align_face(image)
         image_outputs = [upload_image(aligned_image, bucket)]
+        # photo_style = form_data.get("photoStyle", "id_photo")
 
         optimized_image = optimize_image(aligned_image)
         image_outputs.append(upload_image(optimized_image, bucket))
 
-        if options.get("remove_background"):
-            image, image_mask = remove_background(optimized_image)
-            image_outputs.append(upload_image(image_mask, bucket))
-        else:
-            image_mask = None
+        image, image_mask = remove_background(optimized_image)
+        image_outputs.append(upload_image(image_mask, bucket))
 
         if image_mask:
             new_background = Image.new("RGBA", image.size, (255, 255, 255, 255))
@@ -63,19 +64,14 @@ def process_image(image_url, correlation_id, options, form_data):
             upload_image(mask_face, bucket)
         ])
 
-        edit_strength = form_data.get('edit_strength', {'face': 1.0, 'clothes': 1.0, 'combine': 1.0})
-        guidance_scale = form_data.get('guidance_scale', {'face': 7.5, 'clothes': 7.5, 'combine': 7.5})
-        seek_value = int(form_data.get('seek', 0)) if isinstance(form_data.get('seek', 0), (int, str)) else 0
-        gender = Gender(form_data.get('gender', 'male').lower())
-
         edit_types = {
-            PromptType.FACE: (mask_face, edit_strength.get('face', 1.0), guidance_scale.get('face', 7.5)),
-            PromptType.CLOTHES: (mask_clothes, edit_strength.get('clothes', 1.0), guidance_scale.get('clothes', 7.5)),
-            PromptType.COMBINE: (mask_combined, edit_strength.get('combine', 1.0), guidance_scale.get('combine', 7.5))
+            PromptType.FACE: (mask_face, 0.3, 7.5),
+            PromptType.CLOTHES: (mask_clothes, 1.0, 7.5),
+            PromptType.COMBINE: (mask_combined, 0.5, 7.5)
         }
 
         for edit_type, (mask, strength, scale) in edit_types.items():
-            inpainted_image = inpaint_image(image, mask, seek_value, edit_type, gender, strength, scale)
+            inpainted_image = inpaint_image(image, mask, edit_type, strength, scale)
             if inpainted_image:
                 image_outputs.append(upload_image(inpainted_image, bucket))
             else:
@@ -83,7 +79,6 @@ def process_image(image_url, correlation_id, options, form_data):
 
         response = {"CorrelationId": correlation_id, "ProcessedImageUrl": image_outputs}
         send_response_to_queue(response)
-
     except Exception as e:
         send_response_to_queue({"CorrelationId": correlation_id, "error": str(e)})
         traceback.print_exc()

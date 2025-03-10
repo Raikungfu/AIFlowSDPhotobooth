@@ -1,6 +1,5 @@
 import torch
-from enums.prompt_type import PromptType
-from enums.user_info import Gender
+import random
 from utils.masks import expand_mask
 from utils.stable_diffusion import inpainting_pipeline
 
@@ -22,7 +21,7 @@ def inpaint(image, mask, prompt, negative_prompt, seek, strength, scale):
                 num_inference_steps=50,
                 height=(image.height // 8) * 8,
                 width=(image.width // 8) * 8,
-                generator=torch.Generator("cpu").manual_seed(int(seek))
+                generator=torch.Generator("cpu").manual_seed(random.randint(0, 2**32 - 1))
             ).images[0]
 
         return result
@@ -30,21 +29,4 @@ def inpaint(image, mask, prompt, negative_prompt, seek, strength, scale):
         print(f"Error during inpainting: {e}")
         return None
     
-
-def generate_id_photo_prompt(prompt_type=PromptType.COMBINE, gender=Gender.Male):
-    base_prompt = "ID photo, studio lighting, natural expression, clear skin, straight posture, high resolution. "
-    
-    if prompt_type in {PromptType.FACE, PromptType.COMBINE}:
-        base_prompt += "Keep original face features, no alteration, no extra hair, no makeup change. "
-
-    if prompt_type in {PromptType.CLOTHES, PromptType.COMBINE}:
-        base_prompt += "Professional attire, clean, elegant. "
-        base_prompt += "Suit, light shirt, neutral tie. " if gender == Gender.Male else "Blouse or suit, minimal makeup. "
-
-    negative_prompt = (
-        "Distorted face, extra hair, altered facial structure, exaggerated makeup, casual wear, messy hair, blurry, cartoon, CGI, unrealistic."
-    )
-
-    return base_prompt.strip(), negative_prompt.strip()
-
 
