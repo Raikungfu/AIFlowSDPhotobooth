@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 from PIL import Image
-from utils.face_detection import face_detector, landmark_predictor
+from model.face_detection import face_detector, landmark_predictor
 import traceback
 
 
