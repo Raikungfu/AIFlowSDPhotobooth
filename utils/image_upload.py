@@ -15,7 +15,7 @@ def download_image(image_url):
     
 
 def upload_image(image, bucket):
-    output_filename = generate_random_filename('.jpeg')
+    output_filename = generate_random_filename('.png')
     output_path = f'/tmp/{output_filename}'
     image.save(output_path)
     return upload_to_firebase_storage(output_path, 'processed_images', bucket)
