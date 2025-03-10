@@ -3,6 +3,7 @@ import random
 from utils.masks import expand_mask
 from model.stable_diffusion import inpainting_pipeline
 
+
 def inpaint(number, image, mask, prompt, negative_prompt, strength, scale):
     try:
         image = image.convert("RGB")

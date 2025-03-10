@@ -1,5 +1,5 @@
 import torch
-from diffusers import StableDiffusionInpaintPipeline, StableDiffusionDepth2ImgPipeline
+from diffusers import StableDiffusionInpaintPipeline
 
 torch.set_num_threads(4)
 

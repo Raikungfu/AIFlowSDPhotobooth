@@ -19,13 +19,11 @@ def generate_id_photo_prompt(prompt_type=PromptType.COMBINE):
 
 
 
-
 def generate_fashion_style_prompt():
     base_prompt = "Fashion style, trendy, stylish, elegant, glamorous, chic, sophisticated, high fashion, luxury, designer clothes, runway, catwalk, model, fashion show. "
     negative_prompt = "Casual style, everyday wear, street style, sporty, athletic, loungewear, pajamas, home clothes, unbranded, fast fashion, low quality, cheap, outdated, unfashionable, old-fashioned, vintage, retro, second-hand"
 
     return base_prompt.strip(), negative_prompt.strip()
-
 
 
 
