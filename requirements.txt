@@ -17,3 +17,5 @@ torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu125
 pytorchcv
 pika
 requests
+controlnet-aux
+mediapipe

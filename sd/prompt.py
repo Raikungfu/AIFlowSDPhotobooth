@@ -47,3 +47,41 @@ def generate_vintage_prompt():
     negative_prompt = "Modern style, vibrant colors, sharp details, high contrast, digital look, futuristic, glossy, saturated colors, high resolution."
 
     return base_prompt.strip(), negative_prompt.strip()
+
+
+def generate_fantasy_prompt():
+    base_prompt = "Fantasy world, mystical, ethereal, glowing magical elements, enchanted forest, dreamlike atmosphere, fairytale, magical realism, surreal, mythical creatures, celestial, divine light."
+    negative_prompt = "Realistic, dull colors, normal lighting, everyday setting, casual look, industrial, urban, lifeless."
+
+    return base_prompt.strip(), negative_prompt.strip()
+
+
+
+def generate_modern_prompt():
+    base_prompt = "Modern cityscape, high-tech, futuristic, sleek design, neon lights, cyberpunk aesthetic, contemporary fashion, luxury lifestyle, urban atmosphere, minimalism, cutting-edge technology."
+    negative_prompt = "Old-fashioned, rustic, historical, medieval, outdated, vintage, messy, cluttered, unpolished, analog."
+
+    return base_prompt.strip(), negative_prompt.strip()
+
+
+
+def generate_nature_prompt():
+    base_prompt = "Beautiful natural scenery, lush green forest, crystal clear waterfall, vibrant flowers, sunrise over mountains, peaceful lake, untouched wilderness, serene, tranquil atmosphere, soft natural light."
+    negative_prompt = "Urban setting, industrial, artificial structures, polluted, crowded, dull, lifeless, concrete, metal, synthetic."
+
+    return base_prompt.strip(), negative_prompt.strip()
+
+
+def generate_anime_prompt():
+    base_prompt = (
+        "Anime style, vibrant colors, soft shading, large expressive eyes, detailed hair strands, "
+        "high contrast, smooth skin, cel shading, sharp outlines, high quality anime artwork."
+    )
+    
+    negative_prompt = (
+        "Realistic, photo-like, western comic style, blurry, low detail, distorted face, harsh lighting, "
+        "CGI, 3D render, extra limbs, deformed anatomy, asymmetrical face, exaggerated proportions."
+    )
+
+    return base_prompt.strip(), negative_prompt.strip()
+

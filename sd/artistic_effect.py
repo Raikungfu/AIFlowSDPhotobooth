@@ -1,37 +1,39 @@
 import traceback
 from sd.prompt import generate_artistic_prompt
-from sd.sd_inpainting import inpaint
-from utils.image_upload import upload_image
+from sd.sd_inpainting import inpaint_with_ip_sd
 from utils.background_prcessing import remove_background
 from utils.optimize_image import optimize_image
 from utils.masks import generate_face_lower_mask
 
-
 def apply_artistic_effects(image, bucket):
     try:
         optimized_image = optimize_image(image).convert("RGBA")
-        image_outputs = [upload_image(optimized_image, bucket)]
-        
-        image, image_mask = remove_background(optimized_image)
-        image_outputs.append(upload_image(image_mask, bucket))
-        image_outputs.append(upload_image(image, bucket))
 
-        mask_face, mask_clothes, mask_combined = generate_face_lower_mask(image, image_mask)
-        if not mask_face or not mask_clothes:
-            raise Exception("No face detected, mask creation failed")
+        image_no_bg, image_mask = remove_background(optimized_image)
 
-        image_outputs.extend([
-            upload_image(mask_clothes, bucket),
-            upload_image(mask_face, bucket)
-        ])
+        mask_face, mask_clothes, mask_combined, face_image = generate_face_lower_mask(image_no_bg, image_mask)
+        if face_image is None:
+            raise ValueError("Không thể nhận diện khuôn mặt!")
 
         base_prompt, negative_prompt = generate_artistic_prompt()
-        
-        results = inpaint(1, image, mask_combined, base_prompt, negative_prompt, 0.5, 7)
 
-        if not results:
-            raise Exception("Inpainting failed")
-        return results
+        inpainted_images = inpaint_with_ip_sd(
+            number=6,
+            image=image_no_bg,
+            mask=mask_combined,
+            face_image=face_image,
+            prompt=base_prompt,
+            negative_prompt=negative_prompt,
+            strength=0.5,
+            scale=7.0
+        )
+
+        if not inpainted_images:
+            raise Exception("Inpainting thất bại!")
+        
+        return inpainted_images
+
     except Exception as e:
         traceback.print_exc()
-        print(f"Error: {e}")
+        print(f"Lỗi khi áp dụng hiệu ứng nghệ thuật: {e}")
+        return None

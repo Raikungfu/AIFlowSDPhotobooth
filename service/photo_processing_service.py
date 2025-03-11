@@ -16,8 +16,8 @@ STYLE_PROCESSORS = {
     "cartoon": process_cartoon,
     "vintage": process_vintage,
     "fashion_style": process_fashion_style,
+    "anime": apply_anime_filter,
 }
-
 
 bucket = initialize_firebase(cred_path, firebaseConfig)
 

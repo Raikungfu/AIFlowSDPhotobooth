@@ -4,3 +4,4 @@ class PromptType(Enum):
     FACE = "face"
     CLOTHES = "clothes"
     COMBINE = "combine"
+
