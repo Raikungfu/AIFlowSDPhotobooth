@@ -3,8 +3,8 @@ from diffusers import StableDiffusionInpaintPipeline, ControlNetModel
 
 torch.set_num_threads(4)
 
-# def dummy_checker(images, **kwargs):
-#     return images, [False] * len(images)
+def dummy_checker(images, **kwargs):
+    return images, [False] * len(images)
 
 controlnet = ControlNetModel.from_pretrained(
     "lllyasviel/control_v11p_sd15_openpose",
@@ -16,10 +16,10 @@ inpainting_pipeline = StableDiffusionInpaintPipeline.from_pretrained("botp/stabl
     controlnet=controlnet,
     torch_dtype=torch.float16).to("cuda")
 
-ip_adapter_weights = torch.load("models/ip-adapter-plus-face_sd15.pth", map_location="cuda")
+# ip_adapter_weights = torch.load("models/ip-adapter-plus-face_sd15.pth", map_location="cuda")
 
-inpainting_pipeline.unet.load_attn_procs(ip_adapter_weights)
+# inpainting_pipeline.unet.load_attn_procs(ip_adapter_weights)
 
 inpainting_pipeline.disable_attention_slicing()
 
-#inpainting_pipeline.safety_checker = dummy_checker
+inpainting_pipeline.safety_checker = dummy_checker
