@@ -25,7 +25,7 @@ def inpaint_with_ip_sd_controlnet(
 
         controlnet_image = None
         if controlnet_type:
-            controlnet_image = apply_controlnet(image, method=controlnet_type)
+            controlnet_image = apply_controlnet(image, controlnet_type)
 
         pipeline_args = {
             "prompt": prompt,
