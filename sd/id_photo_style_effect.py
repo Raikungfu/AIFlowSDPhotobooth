@@ -33,8 +33,8 @@ def apply_id_photo_effect(image):
             PromptType.CLOTHES: (6, mask_clothes, 0.5, 7.5),
             PromptType.COMBINE: (6, mask_combined, 0.3, 4.0)
         }
-        print(type(image_with_bg), type(mask), type(face_image))
-        
+        print(type(image_with_bg), type(mask_face), type(mask_clothes), type(mask_combined), type(face_image))
+
         results = []
 
         for edit_type, (number, mask, strength, scale) in edit_types.items():

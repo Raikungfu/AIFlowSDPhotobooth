@@ -29,7 +29,7 @@ def process_image(image_url, correlation_id, form_data, bucket):
         if image is None:
             raise Exception("Invalid image URL")
         
-        photo_style = form_data.get("photoStyle", "id_photo")
+        photo_style = form_data.get("PhotoStyle", "id_photo")
         processor = STYLE_PROCESSORS.get(photo_style)
         if not processor:
             raise Exception(f"Unknown photo style: {photo_style}")
