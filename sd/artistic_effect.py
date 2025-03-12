@@ -5,7 +5,7 @@ from utils.background_prcessing import remove_background
 from utils.optimize_image import optimize_image
 from utils.masks import generate_face_lower_mask
 
-def apply_artistic_effects(image, bucket):
+def apply_artistic_effects(image):
     try:
         optimized_image = optimize_image(image).convert("RGBA")
 

@@ -11,13 +11,11 @@ from PIL import Image
 from utils.face_alignment import align_face
 
 
-def apply_id_photo_effect(image, bucket):
+def apply_id_photo_effect(image):
     try:
         aligned_image = align_face(image)
-        image_outputs = [upload_image(aligned_image, bucket)]
 
         optimized_image = optimize_image(aligned_image).convert("RGBA")
-        image_outputs.append(upload_image(optimized_image, bucket))
 
         image, image_mask = remove_background(optimized_image)
         if image is None or image_mask is None:
@@ -30,19 +28,14 @@ def apply_id_photo_effect(image, bucket):
         if mask_face is None or mask_clothes is None or mask_combined is None:
             raise ValueError("Failed to generate face or clothes mask")
 
-        image_outputs.extend([
-            upload_image(mask_clothes, bucket),
-            upload_image(mask_face, bucket)
-        ])
-
         edit_types = {
             PromptType.FACE: (1, mask_face, 0.3, 4.0),
             PromptType.CLOTHES: (6, mask_clothes, 0.5, 7.5),
             PromptType.COMBINE: (6, mask_combined, 0.3, 4.0)
         }
-
-        results = []
         print(type(image_with_bg), type(mask), type(face_image))
+        
+        results = []
 
         for edit_type, (number, mask, strength, scale) in edit_types.items():
             base_prompt, negative_prompt = generate_id_photo_prompt(edit_type)

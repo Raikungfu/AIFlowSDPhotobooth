@@ -4,7 +4,7 @@ from sd.sd_inpainting import inpaint_with_ip_sd
 from utils.masks import generate_face_lower_mask
 from utils.optimize_image import optimize_image
 
-def apply_fashion_effect(image, bucket):
+def apply_fashion_effect(image):
     try:
         optimized_image = optimize_image(image).convert("RGBA")
 

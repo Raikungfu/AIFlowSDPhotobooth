@@ -5,7 +5,7 @@ from utils.optimize_image import optimize_image
 from utils.image_upload import upload_image
 from sd.sd_inpainting import inpaint_with_ip_sd_controlnet
 
-def apply_nature_effect(image, bucket):
+def apply_nature_effect(image):
     try:
         optimized_image = optimize_image(image).convert("RGBA")
 
@@ -24,7 +24,7 @@ def apply_nature_effect(image, bucket):
             controlnet_type="softedge"
         )
 
-        return [upload_image(img, bucket) for img in inpainted_images] if inpainted_images else None
+        return inpainted_images
 
     except Exception as e:
         traceback.print_exc()

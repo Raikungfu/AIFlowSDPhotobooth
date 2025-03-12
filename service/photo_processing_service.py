@@ -34,7 +34,7 @@ def process_image(image_url, correlation_id, form_data, bucket):
         if not processor:
             raise Exception(f"Unknown photo style: {photo_style}")
         
-        processed_images = processor(image, bucket)
+        processed_images = processor(image)
 
         if not processed_images:
             raise Exception("Failed to process image")

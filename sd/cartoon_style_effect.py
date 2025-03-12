@@ -5,7 +5,7 @@ from utils.background_prcessing import remove_background
 from utils.optimize_image import optimize_image
 from utils.masks import generate_face_lower_mask
 
-def apply_cartoon_filter(image, bucket):
+def apply_cartoon_filter(image):
     try:
         optimized_image = optimize_image(image).convert("RGBA")
 

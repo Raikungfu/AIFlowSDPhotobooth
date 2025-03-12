@@ -4,7 +4,7 @@ from sd.sd_inpainting import inpaint_with_ip_sd_controlnet
 from enums.inpaint_mode import InpaintMode
 from utils.optimize_image import optimize_image
 
-def apply_modern_effect(image, bucket):
+def apply_modern_effect(image):
     try:
         optimized_image = optimize_image(image).convert("RGBA")
         
