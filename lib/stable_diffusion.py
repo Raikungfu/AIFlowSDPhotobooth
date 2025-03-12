@@ -1,11 +1,10 @@
 import torch
 from diffusers import StableDiffusionInpaintPipeline, ControlNetModel
-from controlnet_aux import OpenposeDetector
 
 torch.set_num_threads(4)
 
-def dummy_checker(images, **kwargs):
-    return images, [False] * len(images)
+# def dummy_checker(images, **kwargs):
+#     return images, [False] * len(images)
 
 controlnet = ControlNetModel.from_pretrained(
     "lllyasviel/control_v11p_sd15_openpose",
@@ -23,4 +22,4 @@ inpainting_pipeline.unet.load_attn_procs(ip_adapter_weights)
 
 inpainting_pipeline.disable_attention_slicing()
 
-inpainting_pipeline.safety_checker = dummy_checker
+#inpainting_pipeline.safety_checker = dummy_checker
