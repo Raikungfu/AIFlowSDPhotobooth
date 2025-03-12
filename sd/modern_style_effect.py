@@ -9,6 +9,7 @@ def apply_modern_effect(image, bucket):
         optimized_image = optimize_image(image).convert("RGBA")
         
         base_prompt, negative_prompt = generate_modern_prompt()
+        print(type(optimized_image))
 
         inpainted_images = inpaint_with_ip_sd_controlnet(
             number=6,

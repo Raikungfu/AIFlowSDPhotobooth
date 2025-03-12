@@ -15,6 +15,8 @@ def apply_vintage_effect(image, bucket):
             raise ValueError("Không thể nhận diện khuôn mặt!")
 
         base_prompt, negative_prompt = generate_vintage_prompt()
+        
+        print(type(image_no_bg), type(mask_combined), type(face_image))
 
         inpainted_images = inpaint_with_ip_sd_controlnet(
             number=1,

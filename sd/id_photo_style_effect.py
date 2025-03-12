@@ -1,3 +1,4 @@
+import traceback
 from enums.inpaint_mode import InpaintMode
 from enums.prompt_type import PromptType
 from sd.prompt import generate_id_photo_prompt
@@ -41,6 +42,7 @@ def apply_id_photo_effect(image, bucket):
         }
 
         results = []
+        print(type(image_with_bg), type(mask), type(face_image))
 
         for edit_type, (number, mask, strength, scale) in edit_types.items():
             base_prompt, negative_prompt = generate_id_photo_prompt(edit_type)
@@ -61,5 +63,6 @@ def apply_id_photo_effect(image, bucket):
 
         return results
     except Exception as e:
+        traceback.print_exc()
         print(f"Error: {e}")
         return None

@@ -16,6 +16,8 @@ def apply_artistic_effects(image, bucket):
             raise ValueError("Không thể nhận diện khuôn mặt!")
 
         base_prompt, negative_prompt = generate_artistic_prompt()
+        
+        print(type(image_no_bg), type(mask_combined), type(face_image))
 
         inpainted_images = inpaint_with_ip_sd(
             number=6,

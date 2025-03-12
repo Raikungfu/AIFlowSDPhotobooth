@@ -5,7 +5,7 @@ from utils.background_prcessing import remove_background
 from utils.optimize_image import optimize_image
 from utils.masks import generate_face_lower_mask
 
-def apply_anime_filter(image, bucket):
+def apply_anime_filter(image):
     try:
         optimized_image = optimize_image(image).convert("RGBA")
 
@@ -16,6 +16,8 @@ def apply_anime_filter(image, bucket):
             raise ValueError("Không thể nhận diện khuôn mặt!")
 
         base_prompt, negative_prompt = generate_anime_prompt()
+        
+        print(type(image_no_bg), type(mask_combined), type(face_image))
 
         inpainted_images = inpaint_with_ip_sd_controlnet(
             number=6,

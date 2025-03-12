@@ -13,6 +13,8 @@ def apply_fashion_effect(image, bucket):
             raise ValueError("Không thể nhận diện khuôn mặt!")
 
         base_prompt, negative_prompt = generate_fashion_style_prompt()
+        
+        print(type(optimized_image), type(clothes_mask), type(face_image))
 
         inpainted_images = inpaint_with_ip_sd(
             number=6,

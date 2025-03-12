@@ -8,33 +8,33 @@ from sd.nature_style_effect import apply_nature_effect
 from sd.vintage_style_effect import apply_vintage_effect
 
 
-def process_id_photo(image, bucket):
-    return apply_id_photo_effect(image, bucket)
+def process_id_photo(image):
+    return apply_id_photo_effect(image)
 
 
-def process_artistic_portrait(image, bucket):
-    return apply_artistic_effects(image, bucket)
+def process_artistic_portrait(image):
+    return apply_artistic_effects(image)
 
 
-def process_cartoon(image, bucket):
-    return apply_cartoon_filter(image, bucket)
+def process_cartoon(image):
+    return apply_cartoon_filter(image)
 
 
-def process_vintage(image, bucket):
-    return apply_vintage_effect(image, bucket)
+def process_vintage(image):
+    return apply_vintage_effect(image)
 
 
-def process_fashion_style(image, bucket):
-    return apply_fashion_effect(image, bucket)
+def process_fashion_style(image):
+    return apply_fashion_effect(image)
 
 
-def process_anime_style(image, bucket):
-    return apply_anime_filter(image, bucket)
+def process_anime_style(image):
+    return apply_anime_filter(image)
 
 
-def process_nature_style(image, bucket):
-    return apply_nature_effect(image, bucket)
+def process_nature_style(image):
+    return apply_nature_effect(image)
 
 
-def process_modern_style(image, bucket):
-    return apply_modern_effect(image, bucket)
+def process_modern_style(image):
+    return apply_modern_effect(image)

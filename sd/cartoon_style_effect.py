@@ -14,6 +14,7 @@ def apply_cartoon_filter(image, bucket):
         mask_face, mask_other, mask_combined, face_image = generate_face_lower_mask(image_no_bg, image_mask)
         if face_image is None:
             raise ValueError("Không thể nhận diện khuôn mặt!")
+        print(type(image_no_bg), type(mask_combined), type(face_image))
 
         base_prompt, negative_prompt = generate_cartoon_prompt()
 
