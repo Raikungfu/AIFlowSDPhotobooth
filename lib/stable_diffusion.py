@@ -17,7 +17,7 @@ inpainting_pipeline = StableDiffusionInpaintPipeline.from_pretrained("botp/stabl
     controlnet=controlnet,
     torch_dtype=torch.float16).to("cuda")
 
-ip_adapter_weights = torch.load("models/ip-adapter_sd15_plus.pth", map_location="cuda")
+ip_adapter_weights = torch.load("models/ip-adapter-plus-face_sd15.pth", map_location="cuda")
 
 inpainting_pipeline.unet.load_attn_procs(ip_adapter_weights)
 

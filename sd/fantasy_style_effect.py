@@ -1,6 +1,6 @@
 import traceback
 from sd.prompt import generate_fantasy_prompt
-from sd.sd_inpainting import inpaint
+from sd.sd_inpainting import inpaint_with_ip_sd
 from enums.inpaint_mode import InpaintMode
 from utils.optimize_image import optimize_image
 
@@ -10,7 +10,7 @@ def apply_fantasy_effect(image, bucket):
 
         base_prompt, negative_prompt = generate_fantasy_prompt()
 
-        inpainted_images = inpaint(
+        inpainted_images = inpaint_with_ip_sd(
             number=6,
             image=optimized_image,
             mask=None,
