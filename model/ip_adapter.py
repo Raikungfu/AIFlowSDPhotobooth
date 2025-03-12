@@ -7,7 +7,6 @@ def apply_ip_adapter(image, face_image, strength=0.8):
         prompt="",
         negative_prompt="",
         image=image,
-        mask_image=None,
         strength=strength,
         guidance_scale=1.0,
         reference_image=face_image,
