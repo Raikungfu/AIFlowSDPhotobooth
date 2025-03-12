@@ -45,8 +45,8 @@ def inpaint_with_ip_sd_controlnet(
         with torch.no_grad():
             results = inpainting_pipeline(**pipeline_args).images
 
-            if results is None or not hasattr(results, "images"):
-                raise ValueError("❌ Lỗi: 'inpainting_pipeline()' không trả về ảnh hợp lệ!")
+            if results is None:
+                raise ValueError("❌ Lỗi: 'inpainting_pipeline()' trả về null!")
 
         return results
     except Exception as e:
