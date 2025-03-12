@@ -2,6 +2,7 @@
 
 import json
 import pika
+from sd.anime_style_effect import apply_anime_filter
 from utils.firebase_utils import initialize_firebase
 import traceback
 from const.style import RABBITMQ_URL, REPLY_QUEUE
