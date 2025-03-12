@@ -1,3 +1,4 @@
+import traceback
 import torch
 import random
 import numpy as np
@@ -54,6 +55,7 @@ def inpaint_with_ip_sd_controlnet(
 
         return results
     except Exception as e:
+        traceback.print_exc()
         print(f"Error during inpainting (IP-Adapter, ControlNet={controlnet_type}): {e}")
         return None
 
