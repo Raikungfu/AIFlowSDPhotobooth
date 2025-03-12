@@ -1,14 +1,15 @@
 import traceback
+
+import numpy as np
+import torch
 from lib.stable_diffusion import controlnet_pipeline
 
-def apply_controlnet(image, controlnet_type="canny"):
-    try:
-        return controlnet_pipeline(
-            control_image=image, 
-            control_type=controlnet_type,
-            guidance_scale=1.0,
-            num_inference_steps=50
-        ).images[0]
-    except Exception as e:
-        traceback.print_exc()
-        print(f"Error during ControlNet: {e}")
+def make_inpaint_condition(image, image_mask):
+    image = np.array(image.convert("RGB")).astype(np.float32) / 255.0
+    image_mask = np.array(image_mask.convert("L")).astype(np.float32) / 255.0
+
+    assert image.shape[0:1] == image_mask.shape[0:1], "image and image_mask must have the same image size"
+    image[image_mask > 0.5] = -1.0
+    image = np.expand_dims(image, 0).transpose(0, 3, 1, 2)
+    image = torch.from_numpy(image)
+    return image

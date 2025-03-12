@@ -5,8 +5,7 @@ import numpy as np
 from enums.inpaint_mode import InpaintMode
 from utils.masks import expand_mask
 from lib.stable_diffusion import inpainting_pipeline
-from model.ip_adapter import apply_ip_adapter
-from model.controlnet import apply_controlnet
+from model.controlnet import make_inpaint_condition
 
 def inpaint_with_ip_sd_controlnet(
     number, image, mask, face_image, prompt, negative_prompt, strength, scale,
@@ -21,11 +20,7 @@ def inpaint_with_ip_sd_controlnet(
         elif mode == InpaintMode.KEEP_STRUCTURE:
             mask = None
 
-        image = apply_ip_adapter(image, face_image)
-
-        controlnet_image = None
-        if controlnet_type:
-            controlnet_image = apply_controlnet(image, controlnet_type)
+        control_image = make_inpaint_condition(image, mask)
 
         pipeline_args = {
             "prompt": prompt,
@@ -34,7 +29,7 @@ def inpaint_with_ip_sd_controlnet(
             "strength": strength,
             "guidance_scale": scale,
             "num_inference_steps": 50,
-            "controlnet_image": controlnet_image,
+            "control_image": control_image,
             "height": (image.height // 8) * 8,
             "width": (image.width // 8) * 8,
             "num_images_per_prompt": number,
