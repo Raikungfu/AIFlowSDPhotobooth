@@ -1,8 +1,8 @@
 import pika
 from threading import Thread
 from flask import Flask
-from service.photo_processing_service import callback
-from const.style import QUEUE_NAME, RABBITMQ_URL
+from configs.const.style import QUEUE_NAME, RABBITMQ_URL
+from queues.consumer import callback
 
 
 app = Flask(__name__)

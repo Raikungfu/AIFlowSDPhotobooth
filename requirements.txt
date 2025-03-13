@@ -1,6 +1,6 @@
 onnxruntime
 git+https://github.com/huggingface/diffusers
-midas
+matplotlib
 tensorflow
 keras
 numpy

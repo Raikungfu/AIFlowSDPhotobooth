@@ -1,35 +1,34 @@
-
-
 import json
 import pika
-from sd.anime_style_effect import apply_anime_filter
 from utils.firebase_utils import initialize_firebase
 import traceback
-from const.style import RABBITMQ_URL, REPLY_QUEUE
+from configs.const.style import RABBITMQ_URL, REPLY_QUEUE
 from utils.image_upload import download_image, upload_image
-from flow.photo_style_flow import process_artistic_portrait, process_cartoon, process_fashion_style, process_id_photo, process_vintage
-from const.config import cred_path, firebaseConfig
+from effects.photo_style_flow import process_artistic, process_anime, process_cartoon, process_fantasy, process_fashion_style, process_id_photo, process_modern_style, process_nature_style, process_vintage
+from configs.const.config import cred_path, firebaseConfig
 
 
 STYLE_PROCESSORS = {
-    "id_photo": process_id_photo,
-    "artistic_portrait": process_artistic_portrait,
+    "anime": process_anime,
+    "artistic_portrait": process_artistic,
     "cartoon": process_cartoon,
-    "vintage": process_vintage,
+    "fantasy": process_fantasy,
     "fashion_style": process_fashion_style,
-    "anime": apply_anime_filter,
+    "id_photo": process_id_photo,
+    "modern": process_modern_style,
+    "nature": process_nature_style,
+    "vintage": process_vintage,
 }
 
 bucket = initialize_firebase(cred_path, firebaseConfig)
 
 
-def process_image(image_url, correlation_id, form_data, bucket):
+def process_image(image_url, correlation_id, photo_style, bucket):
     try:
         image = download_image(image_url)
         if image is None:
             raise Exception("Invalid image URL")
         
-        photo_style = form_data.get("PhotoStyle", "id_photo")
         processor = STYLE_PROCESSORS.get(photo_style)
         if not processor:
             raise Exception(f"Unknown photo style: {photo_style}")
@@ -76,8 +75,8 @@ def callback(ch, method, properties, body):
 
     image_url = message.get("imageUrl")
     correlation_id = message.get("correlationId")
-    form_data = message.get("formData", {})
+    photo_style = message.get("photoStyle")
 
     print(f"Received: {image_url}, CorrelationId: {correlation_id}")
 
-    process_image(image_url, correlation_id, form_data, bucket)
+    process_image(image_url, correlation_id, photo_style, bucket)

@@ -1,14 +1,20 @@
-import traceback
-
-import numpy as np
 import torch
+import numpy as np
+from PIL import Image
 
-def make_inpaint_condition(image, image_mask):
+def make_inpaint_condition(image, image_mask=None):
     image = np.array(image.convert("RGB")).astype(np.float32) / 255.0
-    image_mask = np.array(image_mask.convert("L")).astype(np.float32) / 255.0
+    
+    if image_mask is None:
+        image_mask = Image.new("L", image.shape[1::-1], 255)
+    else:
+        image_mask = np.array(image_mask.convert("L")).astype(np.float32) / 255.0
 
     assert image.shape[0:1] == image_mask.shape[0:1], "image and image_mask must have the same image size"
+    
     image[image_mask > 0.5] = -1.0
+    
     image = np.expand_dims(image, 0).transpose(0, 3, 1, 2)
     image = torch.from_numpy(image)
+    
     return image

@@ -1,13 +1,12 @@
 import traceback
-from enums.inpaint_mode import InpaintMode
-from enums.prompt_type import PromptType
-from sd.prompt import generate_id_photo_prompt
-from sd.sd_inpainting import inpaint_with_ip_sd_controlnet
-from utils.canny_image import create_canny_image
+from configs.enums.inpaint_mode import InpaintMode
+from configs.enums.prompt_type import PromptType
+from configs.prompt import generate_id_photo_prompt
+from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd_controlnet
+from utils.canny import create_canny_image
 from utils.masks import generate_face_lower_mask
 from utils.optimize_image import optimize_image
 from utils.background_prcessing import place_on_new_background, remove_background
-from utils.image_upload import upload_image
 from PIL import Image
 from utils.face_alignment import align_face
 
@@ -51,8 +50,8 @@ def apply_id_photo_effect(image):
                 negative_prompt=negative_prompt,
                 strength=strength,
                 scale=scale,
-                controlnet_type="canny",
                 control_image=canny_image,
+                controlnet_type="canny",
                 mode=InpaintMode.KEEP_FACE
             )
             if inpainted_images:
@@ -61,5 +60,5 @@ def apply_id_photo_effect(image):
         return results
     except Exception as e:
         traceback.print_exc()
-        print(f"Error: {e}")
+        print(f"Error applying id photo effect: {e}")
         return None
