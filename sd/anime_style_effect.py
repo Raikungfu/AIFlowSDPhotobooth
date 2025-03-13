@@ -2,12 +2,15 @@ import traceback
 from sd.prompt import generate_anime_prompt
 from sd.sd_inpainting import inpaint_with_ip_sd_controlnet
 from utils.background_prcessing import remove_background
+from utils.canny_image import create_canny_image
 from utils.optimize_image import optimize_image
 from utils.masks import generate_face_lower_mask
 
 def apply_anime_filter(image):
     try:
         optimized_image = optimize_image(image).convert("RGBA")
+        
+        canny_image = create_canny_image(optimized_image)
 
         image_no_bg, image_mask = remove_background(optimized_image)
 
@@ -28,7 +31,8 @@ def apply_anime_filter(image):
             negative_prompt=negative_prompt,
             strength=0.8,
             scale=9.0,
-            controlnet_type="softedge",
+            controlnet_type="canny",
+            control_image=canny_image,
         )
 
         if not inpainted_images:

@@ -2,6 +2,7 @@ import traceback
 from sd.prompt import generate_vintage_prompt
 from sd.sd_inpainting import inpaint_with_ip_sd_controlnet
 from utils.background_prcessing import remove_background
+from utils.depth_image import create_depth_image
 from utils.optimize_image import optimize_image
 from utils.masks import generate_face_lower_mask
 
@@ -9,6 +10,8 @@ def apply_vintage_effect(image):
     try:
         optimized_image = optimize_image(image).convert("RGBA")
         image_no_bg, image_mask = remove_background(optimized_image)
+
+        depth_image = create_depth_image(image)
 
         mask_face, mask_clothes, mask_combined, face_image = generate_face_lower_mask(image_no_bg, image_mask)
         if face_image is None:
@@ -28,6 +31,7 @@ def apply_vintage_effect(image):
             strength=0.6,
             scale=7.5,
             controlnet_type="depth",
+            control_image=depth_image,
         )
 
         if not inpainted_images:

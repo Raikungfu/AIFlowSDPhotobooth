@@ -2,11 +2,13 @@ import traceback
 from sd.prompt import generate_modern_prompt
 from sd.sd_inpainting import inpaint_with_ip_sd_controlnet
 from enums.inpaint_mode import InpaintMode
+from utils.canny_image import create_canny_image
 from utils.optimize_image import optimize_image
 
 def apply_modern_effect(image):
     try:
         optimized_image = optimize_image(image).convert("RGBA")
+        canny_image = create_canny_image(optimized_image)
         
         base_prompt, negative_prompt = generate_modern_prompt()
         print(type(optimized_image))
@@ -20,7 +22,8 @@ def apply_modern_effect(image):
             negative_prompt=negative_prompt,
             strength=0.5,
             scale=7.5,
-            controlnet_type="softedge",
+            controlnet_type="canny",
+            control_image=canny_image,
             mode=InpaintMode.KEEP_STRUCTURE
         )
 

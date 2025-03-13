@@ -1,6 +1,7 @@
 import traceback
 from enums.inpaint_mode import InpaintMode
 from sd.prompt import generate_nature_prompt
+from utils.canny_image import create_canny_image
 from utils.optimize_image import optimize_image
 from utils.image_upload import upload_image
 from sd.sd_inpainting import inpaint_with_ip_sd_controlnet
@@ -8,6 +9,7 @@ from sd.sd_inpainting import inpaint_with_ip_sd_controlnet
 def apply_nature_effect(image):
     try:
         optimized_image = optimize_image(image).convert("RGBA")
+        canny_image = create_canny_image(optimized_image)
 
         base_prompt, negative_prompt = generate_nature_prompt()
         print(type(optimized_image))
@@ -21,7 +23,8 @@ def apply_nature_effect(image):
             negative_prompt=negative_prompt,
             strength=0.6,
             scale=8.0,
-            controlnet_type="softedge"
+            controlnet_type="canny",
+            control_image=canny_image,
         )
 
         return inpainted_images

@@ -1,6 +1,7 @@
 from enums.inpaint_mode import InpaintMode
 from sd.prompt import generate_fashion_style_prompt
 from sd.sd_inpainting import inpaint_with_ip_sd
+from utils.background_prcessing import remove_background
 from utils.masks import generate_face_lower_mask
 from utils.optimize_image import optimize_image
 
@@ -8,18 +9,20 @@ def apply_fashion_effect(image):
     try:
         optimized_image = optimize_image(image).convert("RGBA")
 
-        face_mask, clothes_mask, combined_mask, face_image = generate_face_lower_mask(optimized_image)
+        mask = optimized_image.convert("L")
+
+        image_no_bg, image_mask = remove_background(optimized_image)
+
+        face_mask, clothes_mask, combined_mask, face_image = generate_face_lower_mask(optimized_image, image_mask)
         if face_image is None:
             raise ValueError("Không thể nhận diện khuôn mặt!")
 
         base_prompt, negative_prompt = generate_fashion_style_prompt()
-        
-        print(type(optimized_image), type(clothes_mask), type(face_image))
 
         inpainted_images = inpaint_with_ip_sd(
             number=6,
             image=optimized_image,
-            mask=clothes_mask,
+            mask=mask,
             face_image=face_image,
             prompt=base_prompt,
             negative_prompt=negative_prompt,
