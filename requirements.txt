@@ -1,5 +1,6 @@
 onnxruntime
 git+https://github.com/huggingface/diffusers
+git+https://github.com/isl-org/MiDaS.git
 tensorflow
 keras
 numpy
