@@ -2,7 +2,6 @@ import traceback
 
 import numpy as np
 import torch
-from lib.stable_diffusion import controlnet_pipeline
 
 def make_inpaint_condition(image, image_mask):
     image = np.array(image.convert("RGB")).astype(np.float32) / 255.0
