@@ -33,7 +33,7 @@ def generate_fashion_style_prompt():
 
 def generate_cartoon_prompt():
     base_prompt = (
-        "Create a vibrant and stylized cartoon image featuring a character with smooth features and big expressive eyes. Use sharp outlines and a bright color palette to bring the character to life. The background should be whimsical and colorful, enhancing the overall playful aesthetic of the artwork.")
+        "Create a cartoon character with smooth features, big eyes, sharp outlines, and bright colors. The background should be playful and colorful.")
     negative_prompt = (
         "Rough textures, distorted anatomy, muted colors, blurry lines, missing parts, or extra limbs."
     )

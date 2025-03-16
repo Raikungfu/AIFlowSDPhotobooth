@@ -3,7 +3,6 @@ from configs.enums.inpaint_mode import InpaintMode
 from configs.enums.prompt_type import PromptType
 from configs.prompt import generate_id_photo_prompt
 from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd
-from utils.canny import create_canny_image
 from utils.masks import generate_face_lower_mask
 from utils.optimize_image import optimize_image
 from utils.background_prcessing import place_on_new_background, remove_background

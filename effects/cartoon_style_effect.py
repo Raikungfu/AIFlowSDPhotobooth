@@ -1,12 +1,9 @@
 import traceback
-
 import numpy as np
 from configs.prompt import generate_cartoon_prompt
 from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd_controlnet
 from utils.background_prcessing import remove_background
-from utils.canny import create_canny_image
 from utils.controlnet_images import create_controlnet_image
-from utils.open_pose import create_openpose_image
 from utils.optimize_image import optimize_image
 from utils.masks import generate_face_lower_mask
 from PIL import Image
@@ -38,8 +35,8 @@ def apply_cartoon_filter(image):
             face_image=face_image,
             prompt=base_prompt,
             negative_prompt=negative_prompt,
-            strength=0.8,
-            scale=9.0,
+            strength=0.9,
+            scale=12.0,
             control_images=[openpose_image, canny_image, depth_image]
         )
 

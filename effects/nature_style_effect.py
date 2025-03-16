@@ -1,7 +1,6 @@
 import traceback
 import numpy as np
 from configs.prompt import generate_nature_prompt
-from utils.canny import create_canny_image
 from utils.controlnet_images import create_controlnet_image
 from utils.optimize_image import optimize_image
 from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd_controlnet
