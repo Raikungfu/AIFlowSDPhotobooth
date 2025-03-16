@@ -2,8 +2,10 @@ import traceback
 from PIL import Image
 import numpy as np
 from configs.prompt import generate_artistic_prompt
-from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd, inpaint_with_ip_sd_controlnet
+from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd_controlnet
 from utils.background_prcessing import remove_background
+from utils.canny import create_canny_image
+from utils.controlnet_images import create_controlnet_image
 from utils.depth import create_depth_image
 from utils.open_pose import create_openpose_image
 from utils.optimize_image import optimize_image
@@ -15,13 +17,7 @@ def apply_artistic_effects(image):
 
         image_no_bg, image_mask = remove_background(optimized_image)
         
-        depth_image = create_depth_image(image)
-        if isinstance(depth_image, np.ndarray):
-            depth_image = Image.fromarray(depth_image)
-
-        openpose_image = create_openpose_image(image)
-        if isinstance(openpose_image, np.ndarray):
-            openpose_image = Image.fromarray(openpose_image)
+        depth_image, openpose_image, canny_image = create_controlnet_image(optimized_image)
 
         mask_face, mask_clothes, mask_combined, face_image = generate_face_lower_mask(image_no_bg, image_mask)
         if face_image is None:
@@ -40,8 +36,7 @@ def apply_artistic_effects(image):
             negative_prompt=negative_prompt,
             strength=0.5,
             scale=7.0,
-            control_images=[openpose_image, None, depth_image],
-            controlnet_type="depth,openpose",
+            control_images=[openpose_image, canny_image, depth_image]
         )
 
         if not inpainted_images:

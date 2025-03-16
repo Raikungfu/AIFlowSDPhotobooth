@@ -9,7 +9,7 @@ from utils.preprocess import make_inpaint_condition
 from PIL import Image
 
 def inpaint_with_ip_sd_controlnet(
-    number, image, mask, face_image, prompt, negative_prompt, strength, scale,control_images,controlnet_type=None,mode=InpaintMode.KEEP_FACE
+    number, image, mask, face_image, prompt, negative_prompt, strength, scale,control_images,mode=InpaintMode.KEEP_FACE
 ):
     try:
         image = image.convert("RGB")
@@ -61,10 +61,10 @@ def inpaint_with_ip_sd_controlnet(
         return results
     except Exception as e:
         traceback.print_exc()
-        print(f"Error during inpainting (IP-Adapter, ControlNet={controlnet_type}): {e}")
+        print(f"Error during inpainting: {e}")
         return None
 
 def inpaint_with_ip_sd(number, image, mask, face_image, prompt, negative_prompt, strength, scale, mode=InpaintMode.KEEP_FACE):
     return inpaint_with_ip_sd_controlnet(
-        number, image, mask, face_image, prompt, negative_prompt, strength, scale,control_image=None,controlnet_type=None, mode=mode
+        number, image, mask, face_image, prompt, negative_prompt, strength, scale,control_image=None,mode=mode
     )

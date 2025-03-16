@@ -5,6 +5,7 @@ from configs.prompt import generate_vintage_prompt
 from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd_controlnet
 from utils.background_prcessing import remove_background
 from utils.canny import create_canny_image
+from utils.controlnet_images import create_controlnet_image
 from utils.depth import create_depth_image
 from utils.open_pose import create_openpose_image
 from utils.optimize_image import optimize_image
@@ -15,14 +16,7 @@ def apply_vintage_effect(image):
         optimized_image = optimize_image(image)
         image_no_bg, image_mask = remove_background(optimized_image)
 
-        canny_image = create_canny_image(image)
-
-        if isinstance(canny_image, np.ndarray):
-            canny_image = Image.fromarray(canny_image)
-
-        openpose_image = create_openpose_image(image)
-        if isinstance(openpose_image, np.ndarray):
-            openpose_image = Image.fromarray(openpose_image)
+        depth_image, openpose_image, canny_image = create_controlnet_image(optimized_image)
 
         mask_face, mask_clothes, mask_combined, face_image = generate_face_lower_mask(image_no_bg, image_mask)
         if face_image is None:
@@ -41,8 +35,7 @@ def apply_vintage_effect(image):
             negative_prompt=negative_prompt,
             strength=0.6,
             scale=7.5,
-            control_images=[openpose_image, canny_image, None],
-            controlnet_type="depth",
+            control_images=[openpose_image, canny_image, depth_image]
         )
 
         if not inpainted_images:

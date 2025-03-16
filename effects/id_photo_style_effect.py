@@ -2,7 +2,7 @@ import traceback
 from configs.enums.inpaint_mode import InpaintMode
 from configs.enums.prompt_type import PromptType
 from configs.prompt import generate_id_photo_prompt
-from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd_controlnet
+from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd
 from utils.canny import create_canny_image
 from utils.masks import generate_face_lower_mask
 from utils.optimize_image import optimize_image
@@ -16,8 +16,6 @@ def apply_id_photo_effect(image):
         aligned_image = align_face(image)
 
         optimized_image = optimize_image(aligned_image).convert("RGBA")
-        
-        canny_image = create_canny_image(optimized_image)
 
         image, image_mask = remove_background(optimized_image)
         if image is None or image_mask is None:
@@ -41,7 +39,7 @@ def apply_id_photo_effect(image):
 
         for edit_type, (number, mask, strength, scale) in edit_types.items():
             base_prompt, negative_prompt = generate_id_photo_prompt(edit_type)
-            inpainted_images = inpaint_with_ip_sd_controlnet(
+            inpainted_images = inpaint_with_ip_sd(
                 number,
                 image=image_with_bg,
                 mask=mask,
@@ -50,8 +48,6 @@ def apply_id_photo_effect(image):
                 negative_prompt=negative_prompt,
                 strength=strength,
                 scale=scale,
-                control_image=canny_image,
-                controlnet_type="canny",
                 mode=InpaintMode.KEEP_FACE
             )
             if inpainted_images:

@@ -5,6 +5,7 @@ from configs.prompt import generate_modern_prompt
 from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd_controlnet
 from configs.enums.inpaint_mode import InpaintMode
 from utils.canny import create_canny_image
+from utils.controlnet_images import create_controlnet_image
 from utils.optimize_image import optimize_image
 from PIL import Image
 
@@ -15,15 +16,7 @@ def apply_modern_effect(image):
         if isinstance(optimized_image, np.ndarray):
             optimized_image = Image.fromarray(optimized_image)
     
-        canny_image = create_canny_image(optimized_image)
-
-        if isinstance(canny_image, np.ndarray):
-            canny_image = Image.fromarray(canny_image)
-        
-        depth_image = create_canny_image(optimized_image)
-
-        if isinstance(depth_image, np.ndarray):
-            depth_image = Image.fromarray(depth_image)
+        depth_image, openpose_image, canny_image = create_controlnet_image(optimized_image)
         
         base_prompt, negative_prompt = generate_modern_prompt()
         print(type(optimized_image))
@@ -37,8 +30,7 @@ def apply_modern_effect(image):
             negative_prompt=negative_prompt,
             strength=0.5,
             scale=7.5,
-            control_images=[None, canny_image, depth_image],
-            controlnet_type="depth,canny",
+            control_images=[openpose_image, canny_image, depth_image],
             mode=InpaintMode.KEEP_STRUCTURE
         )
 
