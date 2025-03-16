@@ -10,7 +10,7 @@ from utils.masks import generate_face_lower_mask
 from utils.open_pose import create_openpose_image
 from utils.optimize_image import optimize_image
 
-def apply_fashion_effect(image, controlnets):
+def apply_fashion_effect(image):
     try:
         optimized_image = optimize_image(image)
 
@@ -42,9 +42,8 @@ def apply_fashion_effect(image, controlnets):
             negative_prompt=negative_prompt,
             strength=0.8,
             scale=9.0,
-            control_images=[openpose_image, canny_image],
-            controlnets=controlnets,
-            controlnet_type="canny",
+            control_images=[openpose_image, canny_image, None],
+            controlnet_type="canny,openpose",
         )
 
 

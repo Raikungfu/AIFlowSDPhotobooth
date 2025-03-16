@@ -8,7 +8,7 @@ from utils.canny import create_canny_image
 from utils.optimize_image import optimize_image
 from PIL import Image
 
-def apply_modern_effect(image, controlnets):
+def apply_modern_effect(image):
     try:
         optimized_image = optimize_image(image)
         
@@ -37,8 +37,7 @@ def apply_modern_effect(image, controlnets):
             negative_prompt=negative_prompt,
             strength=0.5,
             scale=7.5,
-            controlnets=controlnets,
-            control_image=[depth_image,canny_image],
+            control_images=[None, canny_image, depth_image],
             controlnet_type="depth,canny",
             mode=InpaintMode.KEEP_STRUCTURE
         )

@@ -8,7 +8,7 @@ from utils.optimize_image import optimize_image
 from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd_controlnet
 from PIL import Image
 
-def apply_nature_effect(image, controlnets):
+def apply_nature_effect(image):
     try:
         optimized_image = optimize_image(image)
         
@@ -32,8 +32,7 @@ def apply_nature_effect(image, controlnets):
             negative_prompt=negative_prompt,
             strength=0.6,
             scale=8.0,
-            controlnets=controlnets,
-            control_image=[depth_image],
+            control_images=[None, None, depth_image],
             controlnet_type="depth",
         )
 

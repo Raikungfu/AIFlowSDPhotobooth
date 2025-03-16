@@ -10,7 +10,7 @@ from utils.open_pose import create_openpose_image
 from utils.optimize_image import optimize_image
 from utils.masks import generate_face_lower_mask
 
-def apply_vintage_effect(image, controlnets):
+def apply_vintage_effect(image):
     try:
         optimized_image = optimize_image(image)
         image_no_bg, image_mask = remove_background(optimized_image)
@@ -41,8 +41,7 @@ def apply_vintage_effect(image, controlnets):
             negative_prompt=negative_prompt,
             strength=0.6,
             scale=7.5,
-            controlnets=controlnets,
-            control_image=[openpose_image, canny_image],
+            control_images=[openpose_image, canny_image, None],
             controlnet_type="depth",
         )
 

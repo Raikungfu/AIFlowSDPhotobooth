@@ -10,7 +10,7 @@ from utils.optimize_image import optimize_image
 from utils.masks import generate_face_lower_mask
 from PIL import Image
 
-def apply_anime_filter(image, controlnets):
+def apply_anime_filter(image):
     try:
         optimized_image = optimize_image(image)
 
@@ -45,8 +45,7 @@ def apply_anime_filter(image, controlnets):
             negative_prompt=negative_prompt,
             strength=0.8,
             scale=9.0,
-            control_image=[openpose_image, canny_image],
-            controlnets=controlnets,
+            control_images=[openpose_image, canny_image, None],
             controlnet_type="canny,openpose",
         )
 

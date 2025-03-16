@@ -10,7 +10,7 @@ from utils.masks import generate_face_lower_mask
 from utils.open_pose import create_openpose_image
 from utils.optimize_image import optimize_image
 
-def apply_fantasy_effect(image, controlnets):
+def apply_fantasy_effect(image):
     try:
         optimized_image = optimize_image(image)
 
@@ -39,8 +39,7 @@ def apply_fantasy_effect(image, controlnets):
             negative_prompt=negative_prompt,
             strength=0.6,
             scale=8.0,
-            control_images=[depth_image, openpose_image],
-            controlnets=controlnets,
+            control_images=[openpose_image, None, depth_image],
             controlnet_type="depth,openpose",
             mode=InpaintMode.KEEP_STRUCTURE
         )

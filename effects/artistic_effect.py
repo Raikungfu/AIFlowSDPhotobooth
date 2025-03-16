@@ -9,7 +9,7 @@ from utils.open_pose import create_openpose_image
 from utils.optimize_image import optimize_image
 from utils.masks import generate_face_lower_mask
 
-def apply_artistic_effects(image, controlnets):
+def apply_artistic_effects(image):
     try:
         optimized_image = optimize_image(image)
 
@@ -40,8 +40,7 @@ def apply_artistic_effects(image, controlnets):
             negative_prompt=negative_prompt,
             strength=0.5,
             scale=7.0,
-            control_images=[depth_image, openpose_image],
-            controlnets=controlnets,
+            control_images=[openpose_image, None, depth_image],
             controlnet_type="depth,openpose",
         )
 

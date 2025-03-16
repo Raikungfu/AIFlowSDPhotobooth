@@ -11,45 +11,36 @@ from models.controlnets import controlnet_openpose, controlnet_canny, controlnet
 
 
 def process_anime(image):
-    controlnets_anime = [controlnet_openpose, controlnet_canny]
-    return apply_anime_filter(image, controlnets_anime)
+    return apply_anime_filter(image)
 
 
 def process_artistic(image):
-    controlnets_artistic = [controlnet_openpose, controlnet_depth]
-    return apply_artistic_effects(image, controlnets_artistic)
+    return apply_artistic_effects(image)
 
 
 def process_cartoon(image):
-    controlnets_cartoon = [controlnet_openpose, controlnet_canny]
-    return apply_cartoon_filter(image, controlnets_cartoon)
+    return apply_cartoon_filter(image)
 
 
 def process_fantasy(image):
-    controlnets_fantasy = [controlnet_openpose, controlnet_depth]
-    return apply_fantasy_effect(image, controlnets_fantasy)
+    return apply_fantasy_effect(image)
 
 
 def process_fashion_style(image):
-    controlnets_fashion = [controlnet_openpose, controlnet_canny]
-    return apply_fashion_effect(image, controlnets_fashion)
+    return apply_fashion_effect(image)
 
 
 def process_id_photo(image):
-    #controlnets_id_photo = [controlnet_openpose, controlnet_canny]
     return apply_id_photo_effect(image)
 
 
 def process_modern_style(image):
-    controlnets_modern = [controlnet_depth, controlnet_canny]
-    return apply_modern_effect(image, controlnets_modern)
+    return apply_modern_effect(image)
 
 
 def process_nature_style(image):
-    controlnets_nature = [controlnet_depth]
-    return apply_nature_effect(image, controlnets_nature)
+    return apply_nature_effect(image)
 
 
 def process_vintage(image):
-    controlnets_vintage = [controlnet_openpose, controlnet_canny]
-    return apply_vintage_effect(image, controlnets_vintage)
+    return apply_vintage_effect(image)
