@@ -1,26 +1,10 @@
-from PIL import Image, ImageDraw
-import numpy as np
+from PIL import Image
 import torch
-from models.controlnets import controlnet_openpose
+from controlnet_aux import OpenposeDetector
 
-def create_openpose_image(image):
-    image = image.convert("RGB")
-    image_tensor = torch.tensor(np.array(image)).unsqueeze(0).float()
-
+def open_pose_image(image):
+    open_pose = OpenposeDetector.from_pretrained("lllyasviel/Annotators")
     with torch.no_grad():
-        output = controlnet_openpose(image_tensor)
+        processed_image_open_pose = open_pose(image, hand_and_face=False)
     
-    openpose_image = draw_openpose(output)
-    
-    return openpose_image
-
-
-def draw_openpose(output):
-    openpose_image = Image.new("RGB", (output.size(2), output.size(1)), (255, 255, 255))
-    draw = ImageDraw.Draw(openpose_image)
-
-    for i in range(output.shape[1]):
-        x, y = output[0, i, 0], output[0, i, 1]
-        draw.point((x, y), fill="red")
-    
-    return openpose_image
+    return processed_image_open_pose
