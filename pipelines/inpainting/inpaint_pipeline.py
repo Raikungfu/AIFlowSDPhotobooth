@@ -9,7 +9,7 @@ from utils.preprocess import make_inpaint_condition
 from PIL import Image
 
 def inpaint_with_ip_sd_controlnet(
-    number, image, mask, face_image, prompt, negative_prompt, strength, scale,control_images,controlnets,controlnet_type=None,mode=InpaintMode.KEEP_FACE
+    number, image, mask, face_image, prompt, negative_prompt, strength, scale,control_images,controlnet_type=None,mode=InpaintMode.KEEP_FACE
 ):
     try:
         image = image.convert("RGB")
@@ -48,7 +48,6 @@ def inpaint_with_ip_sd_controlnet(
 
         if control_images is not None:
             pipeline_args["control_image"] = control_images
-            pipeline_args["controlnet"] = controlnets
 
         if face_image is not None:
             pipeline_args["reference_image"] = face_image if mode == InpaintMode.KEEP_FACE else None

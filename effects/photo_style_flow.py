@@ -7,7 +7,6 @@ from effects.id_photo_style_effect import apply_id_photo_effect
 from effects.modern_style_effect import apply_modern_effect
 from effects.nature_style_effect import apply_nature_effect
 from effects.vintage_style_effect import apply_vintage_effect
-from models.controlnets import controlnet_openpose, controlnet_canny, controlnet_depth
 
 
 def process_anime(image):
