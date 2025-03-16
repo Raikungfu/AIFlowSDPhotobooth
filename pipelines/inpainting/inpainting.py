@@ -12,9 +12,10 @@ def dummy_checker(images, **kwargs):
 inpainting_pipeline = StableDiffusionControlNetInpaintPipeline.from_pretrained(
     "botp/stable-diffusion-v1-5-inpainting",
     torch_dtype=torch.float16,
+    low_cpu_mem_usage=True,
+    device_map="balanced",
     controlnet=[controlnet_openpose, controlnet_canny, controlnet_depth]
 ).to("cuda")
-
 
 inpainting_pipeline.scheduler = UniPCMultistepScheduler.from_config(inpainting_pipeline.scheduler.config)
 
@@ -22,5 +23,6 @@ inpainting_pipeline.scheduler = UniPCMultistepScheduler.from_config(inpainting_p
 ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
 inpainting_pipeline.unet.load_state_dict(ip_adapter, strict=False)
 
-inpainting_pipeline.disable_attention_slicing()
+inpainting_pipeline.enable_attention_slicing()
+inpainting_pipeline.enable_xformers_memory_efficient_attention() 
 inpainting_pipeline.safety_checker = dummy_checker
