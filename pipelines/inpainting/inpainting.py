@@ -1,6 +1,6 @@
 import torch
 from configs.model_paths import MODEL_PATHS
-from diffusers import StableDiffusionControlNetInpaintPipeline
+from diffusers import StableDiffusionControlNetInpaintPipeline, UniPCMultistepScheduler
 from models.controlnets import controlnet_openpose, controlnet_canny, controlnet_depth
 
 torch.set_num_threads(4)
@@ -14,6 +14,9 @@ inpainting_pipeline = StableDiffusionControlNetInpaintPipeline.from_pretrained(
     torch_dtype=torch.float16,
     controlnet=[controlnet_openpose, controlnet_canny, controlnet_depth]
 ).to("cuda")
+
+
+inpainting_pipeline.scheduler = UniPCMultistepScheduler.from_config(inpainting_pipeline.scheduler.config)
 
 
 ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
