@@ -1,6 +1,7 @@
 import torch
 from configs.model_paths import MODEL_PATHS
 from diffusers import StableDiffusionControlNetInpaintPipeline
+from models.controlnets import controlnet_openpose, controlnet_canny, controlnet_depth
 
 torch.set_num_threads(4)
 torch.set_num_interop_threads(4)
@@ -10,7 +11,8 @@ def dummy_checker(images, **kwargs):
 
 inpainting_pipeline = StableDiffusionControlNetInpaintPipeline.from_pretrained(
     "botp/stable-diffusion-v1-5-inpainting",
-    torch_dtype=torch.float16
+    torch_dtype=torch.float16,
+    controlnet=[controlnet_openpose, controlnet_canny, controlnet_depth]
 ).to("cuda")
 
 
