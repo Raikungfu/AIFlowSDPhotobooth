@@ -1,5 +1,6 @@
 import json
 import pika
+import time
 from utils.firebase_utils import initialize_firebase
 import traceback
 from configs.const.style import RABBITMQ_URL, REPLY_QUEUE
@@ -45,37 +46,72 @@ def process_image(image_url, correlation_id, photo_style, bucket):
             print(f"Processed image {i}: {processed_url}")
 
         response = {"CorrelationId": correlation_id, "ProcessedImageUrl": result}
-        send_response_to_queue(response)
+        rabbitmq_client.send_response(response)
     except Exception as e:
-        send_response_to_queue({"CorrelationId": correlation_id, "error": str(e)})
+        rabbitmq_client.send_response({"CorrelationId": correlation_id, "error": str(e)})
         traceback.print_exc()
         print(f"Error: {e}")
 
 
-def send_response_to_queue(response):
-    params = pika.URLParameters(RABBITMQ_URL)
-    connection = pika.BlockingConnection(params)
-    channel = connection.channel()
-    channel.queue_declare(queue=REPLY_QUEUE, durable=False, exclusive=False, auto_delete=False)
+class RabbitMQClient:
+    def __init__(self, url, queue):
+        self.url = url
+        self.queue = queue
+        self.connection = None
+        self.channel = None
+        self.connect()
 
-    channel.basic_publish(
-        exchange="",
-        routing_key=REPLY_QUEUE,
-        body=json.dumps(response)
-    )
+    def connect(self):
+        while True:
+            try:
+                params = pika.ConnectionParameters(
+                    host="rabbitmq-server",
+                    heartbeat=600,
+                    blocked_connection_timeout=300
+                )
+                self.connection = pika.BlockingConnection(params)
+                self.channel = self.connection.channel()
+                self.channel.queue_declare(queue=self.queue, durable=False, exclusive=False, auto_delete=False)
+                print("RabbitMQ connected!")
+                break
+            except pika.exceptions.AMQPConnectionError as e:
+                print(f"Failed to connect to RabbitMQ: {e}, retrying in 5s...")
+                time.sleep(5)
 
-    connection.close()
-    print(f"Sent response: {response}")
+    def send_response(self, response):
+        try:
+            if self.connection is None or self.connection.is_closed:
+                print("Reconnecting to RabbitMQ...")
+                self.connect()
+
+            self.channel.basic_publish(
+                exchange="",
+                routing_key=self.queue,
+                body=json.dumps(response)
+            )
+            print(f"Sent response: {response}")
+        except pika.exceptions.AMQPConnectionError:
+            print("Connection lost, retrying in 5 seconds...")
+            time.sleep(5)
+            self.send_response(response)
+        except Exception as e:
+            print(f"Failed to send response: {e}")
+            traceback.print_exc()
+
+rabbitmq_client = RabbitMQClient(RABBITMQ_URL, REPLY_QUEUE)
 
 
 def callback(ch, method, properties, body):
-    message = json.loads(body)
-    print(f"Received: {message}")
+    try:
+        message = json.loads(body)
 
-    image_url = message.get("imageUrl")
-    correlation_id = message.get("correlationId")
-    photo_style = message.get("photoStyle")
+        image_url = message.get("imageUrl")
+        correlation_id = message.get("correlationId")
+        photo_style = message.get("photoStyle")
 
-    print(f"Received: {image_url}, CorrelationId: {correlation_id}")
+        print(f"Received: {image_url}, CorrelationId: {correlation_id}")
 
-    process_image(image_url, correlation_id, photo_style, bucket)
+        process_image(image_url, correlation_id, photo_style, bucket)
+    except Exception as e:
+        print(f"Error in callback: {e}")
+        traceback.print_exc()
