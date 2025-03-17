@@ -15,6 +15,10 @@ class RabbitMQConnection:
         for attempt in range(max_retries):
             try:
                 params = pika.URLParameters(self.url)
+
+                params.heartbeat = 60
+                params.connection_attempts = 5
+                params.retry_delay = 3
                 params.ssl_options = pika.SSLOptions(ssl.create_default_context())
 
                 self.connection = pika.BlockingConnection(params)
@@ -28,7 +32,7 @@ class RabbitMQConnection:
 
         print("Could not connect to RabbitMQ after multiple attempts.")
         raise Exception("RabbitMQ connection failed")
-    
+
     def get_channel(self):
         if self.connection is None or self.connection.is_closed:
             self.connect()
