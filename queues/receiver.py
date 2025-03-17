@@ -39,7 +39,7 @@ class RabbitMQReceiver:
         print(f"Listening for messages on '{self.queue}'...")
         self.channel.start_consuming()
 
-    def callback(self, ch, method, properties, body):
+    def callback(ch, method, properties, body):
         try:
             message = json.loads(body)
             print(f"Received: {message}")
