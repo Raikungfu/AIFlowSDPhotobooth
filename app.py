@@ -1,26 +1,39 @@
+import threading
+import time
 import pika
-from threading import Thread
 from flask import Flask
 from configs.const.style import QUEUE_NAME, RABBITMQ_URL
 from queues.receiver import RabbitMQReceiver
 
-
 app = Flask(__name__)
 
-
 def start_worker():
-    params = pika.URLParameters(RABBITMQ_URL)
-    connection = pika.BlockingConnection(params)
-    channel = connection.channel()
+    while True:
+        try:
+            print("Connecting to RabbitMQ...")
+            params = pika.URLParameters(RABBITMQ_URL)
+            connection = pika.BlockingConnection(params)
+            channel = connection.channel()
 
-    channel.queue_declare(queue=QUEUE_NAME, durable=False, exclusive=False, auto_delete=False, arguments={"x-message-ttl": 300000})
-    channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(queue=QUEUE_NAME, auto_ack=True, on_message_callback=RabbitMQReceiver.callback)
+            channel.queue_declare(queue=QUEUE_NAME, durable=False, exclusive=False, auto_delete=False, arguments={"x-message-ttl": 300000})
+            channel.basic_qos(prefetch_count=1)
+            channel.basic_consume(queue=QUEUE_NAME, auto_ack=True, on_message_callback=RabbitMQReceiver.callback)
 
-    print("Worker started...")
-    channel.start_consuming()
+            print("Worker connected and listening...")
 
+            while connection.is_open:
+                connection.process_data_events(time_limit=1)
+                time.sleep(0.5)
+
+        except (pika.exceptions.AMQPError, pika.exceptions.ConnectionClosed) as e:
+            print(f"Connect error: {e}, try to connect after 5 second...")
+            try:
+                if connection.is_open:
+                    connection.close()
+            except:
+                pass
+            time.sleep(5)
 
 if __name__ == '__main__':
-    Thread(target=start_worker).start()
+    threading.Thread(target=start_worker, daemon=True).start()
     app.run(host='0.0.0.0', port=5000, threaded=True)
