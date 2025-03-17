@@ -23,5 +23,4 @@ ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
 inpainting_pipeline.unet.load_state_dict(ip_adapter, strict=False)
 
 inpainting_pipeline.enable_attention_slicing()
-inpainting_pipeline.enable_xformers_memory_efficient_attention() 
 inpainting_pipeline.safety_checker = dummy_checker
