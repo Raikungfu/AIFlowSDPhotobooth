@@ -1,7 +1,7 @@
 import traceback
 import torch
 import random
-import numpy as np
+import gc
 from configs.enums.inpaint_mode import InpaintMode
 from utils.masks import expand_mask
 from pipelines.inpainting.inpainting import inpainting_pipeline
@@ -18,7 +18,7 @@ def inpaint_with_ip_sd_controlnet(
             mask = mask.convert("L")
 
         if mask is None:
-            print("⚠️ Warning: mask is None. Creating a default white mask.")
+            print("Warning: mask is None. Creating a default white mask.")
             mask = Image.new("L", image.size, 255)
             
         if mode == InpaintMode.KEEP_FACE:
@@ -29,6 +29,9 @@ def inpaint_with_ip_sd_controlnet(
 
         if mask is not None and control_images is None:
             control_images = [make_inpaint_condition(image, mask)]
+
+        seed = random.randint(0, 2**32 - 1)
+        generator = [torch.Generator("cpu").manual_seed(seed) for _ in range(number)]
             
         pipeline_args = {
             "prompt": prompt,
@@ -40,7 +43,7 @@ def inpaint_with_ip_sd_controlnet(
             "height": (image.height // 8) * 8,
             "width": (image.width // 8) * 8,
             "num_images_per_prompt": number,
-            "generator": [torch.Generator("cpu").manual_seed(random.randint(0, 2**32 - 1)) for _ in range(number)]
+            "generator": generator
         }
 
         if mask is not None:
@@ -63,8 +66,13 @@ def inpaint_with_ip_sd_controlnet(
         traceback.print_exc()
         print(f"Error during inpainting: {e}")
         return None
+    # finally:
+    #     inpainting_pipeline.to("cpu")
+    #     del inpainting_pipeline
+    #     gc.collect()
+    #     torch.cuda.empty_cache()
 
 def inpaint_with_ip_sd(number, image, mask, face_image, prompt, negative_prompt, strength, scale, mode=InpaintMode.KEEP_FACE):
     return inpaint_with_ip_sd_controlnet(
-        number, image, mask, face_image, prompt, negative_prompt, strength, scale,control_image=None,mode=mode
+        number, image, mask, face_image, prompt, negative_prompt, strength, scale,control_images=None,mode=mode
     )

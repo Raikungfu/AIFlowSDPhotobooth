@@ -7,7 +7,6 @@ from utils.image_upload import download_image, upload_image
 from effects.photo_style_flow import process_artistic, process_anime, process_cartoon, process_fantasy, process_fashion_style, process_id_photo, process_modern_style, process_nature_style, process_vintage
 from configs.const.config import cred_path, firebaseConfig
 
-
 STYLE_PROCESSORS = {
     "anime": process_anime,
     "artistic_portrait": process_artistic,
