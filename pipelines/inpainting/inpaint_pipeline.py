@@ -1,17 +1,18 @@
+import gc
 import traceback
 import torch
 import random
-import gc
 from configs.enums.inpaint_mode import InpaintMode
 from utils.masks import expand_mask
-from pipelines.inpainting.inpainting import inpainting_pipeline
+from pipelines.inpainting.inpainting import load_inpainting_pipeline
 from utils.preprocess import make_inpaint_condition
 from PIL import Image
 
 def inpaint_with_ip_sd_controlnet(
-    number, image, mask, face_image, prompt, negative_prompt, strength, scale,control_images,mode=InpaintMode.KEEP_FACE
+    number, image, mask, face_image, prompt, negative_prompt, strength, scale,control_images,controlnets,mode=InpaintMode.KEEP_FACE
 ):
     try:
+        inpainting_pipeline = load_inpainting_pipeline(controlnets=controlnets)
         image = image.convert("RGB")
 
         if mask is not None and isinstance(mask, Image.Image):
@@ -66,11 +67,11 @@ def inpaint_with_ip_sd_controlnet(
         traceback.print_exc()
         print(f"Error during inpainting: {e}")
         return None
-    # finally:
-    #     inpainting_pipeline.to("cpu")
-    #     del inpainting_pipeline
-    #     gc.collect()
-    #     torch.cuda.empty_cache()
+    finally:
+        inpainting_pipeline.to("cpu")
+        del inpainting_pipeline
+        gc.collect()
+        torch.cuda.empty_cache()
 
 def inpaint_with_ip_sd(number, image, mask, face_image, prompt, negative_prompt, strength, scale, mode=InpaintMode.KEEP_FACE):
     return inpaint_with_ip_sd_controlnet(

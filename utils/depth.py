@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 from PIL import Image
 
-def create_depth_image(image, model_type="DPT_Large"):
+def depth_image(image, model_type="DPT_Large"):
     if not isinstance(image, np.ndarray):
         image = np.array(image)
     

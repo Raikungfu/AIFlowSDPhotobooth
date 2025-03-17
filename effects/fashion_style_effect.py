@@ -1,14 +1,9 @@
 import traceback
-from PIL import Image
-import numpy as np
-from configs.enums.inpaint_mode import InpaintMode
 from configs.prompt import generate_fashion_style_prompt
 from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd_controlnet
 from utils.background_prcessing import remove_background
-from utils.canny import create_canny_image
-from utils.controlnet_images import create_controlnet_image
+from utils.controlnet_images import create_canny_image, create_openpose_image
 from utils.masks import generate_face_lower_mask
-from utils.open_pose import create_openpose_image
 from utils.optimize_image import optimize_image
 
 def apply_fashion_effect(image):
@@ -19,7 +14,8 @@ def apply_fashion_effect(image):
 
         image_no_bg, image_mask = remove_background(optimized_image)        
         
-        depth_image, openpose_image, canny_image = create_controlnet_image(optimized_image)
+        openpose_image = create_openpose_image(optimized_image)
+        canny_image = create_canny_image(optimized_image)
 
         face_mask, clothes_mask, combined_mask, face_image = generate_face_lower_mask(optimized_image, image_mask)
         if face_image is None:
@@ -36,7 +32,8 @@ def apply_fashion_effect(image):
             negative_prompt=negative_prompt,
             strength=0.8,
             scale=9.0,
-            control_images=[openpose_image, canny_image, depth_image],
+            control_images=[openpose_image, canny_image],
+            controlnets=["openpose", "canny"]
         )
 
 

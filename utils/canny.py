@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-def create_canny_image(image):
+def canny_image(image):
     try:
         if isinstance(image, np.ndarray):
             image = Image.fromarray(image)
