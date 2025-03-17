@@ -13,7 +13,6 @@ inpainting_pipeline = StableDiffusionControlNetInpaintPipeline.from_pretrained(
     "botp/stable-diffusion-v1-5-inpainting",
     torch_dtype=torch.float16,
     low_cpu_mem_usage=True,
-    device_map="balanced",
     controlnet=[controlnet_openpose, controlnet_canny, controlnet_depth]
 ).to("cuda")
 

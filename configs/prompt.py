@@ -33,9 +33,13 @@ def generate_fashion_style_prompt():
 
 def generate_cartoon_prompt():
     base_prompt = (
-        "Create a cartoon character with smooth features, big eyes, sharp outlines, and bright colors. The background should be playful and colorful.")
+        "Create a vibrant, exaggerated cartoon character with smooth, flawless skin, large expressive eyes, and a small nose. " 
+        "The character should have stylized, sharp outlines with a bright color palette, using bold and playful colors for the character's clothing and hair. "
+        "The background should be whimsical, with simple and colorful elements to enhance the playful and imaginative aesthetic of the cartoon. "
+        "The character should have exaggerated features such as large eyes, tiny hands, and a playful posture."
+    )
     negative_prompt = (
-        "Rough textures, distorted anatomy, muted colors, blurry lines, missing parts, or extra limbs."
+        "Avoid rough textures, distorted or realistic anatomy, muted colors, blurred lines, missing body parts, or unnatural proportions."
     )
 
     return base_prompt.strip(), negative_prompt.strip()
@@ -53,13 +57,11 @@ def generate_artistic_prompt():
     return base_prompt.strip(), negative_prompt.strip()
 
 
-
 def generate_vintage_prompt():
     base_prompt = "Create a classic vintage photo with a sepia tone and soft contrast. The image should evoke a nostalgic feel, featuring smooth skin and a natural expression. Use high-quality textures to enhance the vintage look, and ensure the background complements the overall aesthetic without being distracting."
     negative_prompt = "Modern sharpness, digital artifacts, unnatural lighting, reflections, excessive grain, or aged skin."
 
     return base_prompt.strip(), negative_prompt.strip()
-
 
 
 def generate_fantasy_prompt():
@@ -71,7 +73,6 @@ def generate_fantasy_prompt():
     )
 
     return base_prompt.strip(), negative_prompt.strip()
-
 
 
 def generate_modern_prompt():
