@@ -22,7 +22,7 @@ class RabbitMQConnection:
             try:
                 self.connection = pika.BlockingConnection(params)
                 self.channel = self.connection.channel()
-                self.channel.queue_declare(queue=self.queue, durable=True)
+                self.channel.queue_declare(queue=self.queue, durable=False)
                 print("RabbitMQ connected!")
                 return
             except (ConnectionClosedByBroker, AMQPConnectionError, ssl.SSLEOFError) as e:
