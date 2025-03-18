@@ -17,7 +17,7 @@ class RabbitMQSender:
             properties = pika.BasicProperties(
                 delivery_mode=2,
                 correlation_id=response.get("CorrelationId"),
-                reply_to=self.reply_queue
+                reply_to=self.queue
             )
 
 
