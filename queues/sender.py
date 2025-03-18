@@ -5,7 +5,7 @@ import traceback
 from queues.connection import RabbitMQConnection
 import ssl
 from pika.exceptions import ConnectionClosedByBroker, AMQPConnectionError
-
+from configs.const.style import REPLY_QUEUE
 
 
 class RabbitMQSender:
@@ -32,7 +32,7 @@ class RabbitMQSender:
             print(f"Sent response: {response}")
         except (ConnectionClosedByBroker, AMQPConnectionError, ssl.SSLEOFError) as e:
             print("Connection lost, retrying in 5 seconds....Error: {e}")
-            RabbitMQConnection().reconnect()
+            RabbitMQConnection(REPLY_QUEUE).reconnect()
             time.sleep(5)
             self.send_response(response)
         except Exception as e:
