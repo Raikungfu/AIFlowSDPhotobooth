@@ -7,7 +7,17 @@ import traceback
 
 def generate_face_lower_mask(image, image_mask):
     try:
-        image_np = np.array(image)
+        if image is None or image_mask is None:
+            raise ValueError("Input images cannot be None!")
+
+        if isinstance(image, Image.Image):
+            image_np = np.array(image.convert("RGB"))
+        else:
+            image_np = image
+
+        if image_np.dtype != np.uint8:
+            image_np = image_np.astype(np.uint8)
+
         gray = cv2.cvtColor(image_np, cv2.COLOR_RGB2GRAY)
         faces = face_detector(gray)
 

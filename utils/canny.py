@@ -7,7 +7,7 @@ def canny_image(image):
         if isinstance(image, np.ndarray):
             image = Image.fromarray(image)
 
-        image = image.convert("L")
+        image = image.convert("RGB").convert("L")
         image_np = np.array(image)
         if image_np.dtype != np.uint8:
             image_np = image_np.astype(np.uint8)
