@@ -24,8 +24,7 @@ class RabbitMQSender:
             self.channel.basic_publish(
                 exchange="",
                 routing_key=self.queue,
-                body=json.dumps(response),
-                auto_ack=True
+                body=json.dumps(response)
             )
             print(f"Sent response: {response}")
         except pika.exceptions.AMQPConnectionError:
