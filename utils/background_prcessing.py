@@ -23,6 +23,10 @@ def remove_background(image):
         mask_filtered = cv2.morphologyEx(mask_filtered, cv2.MORPH_CLOSE, kernel)
 
         img_cv = np.array(image)
+
+        if img_cv.shape[-1] == 4:
+            img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGBA2RGB)
+            
         bgd_model = np.zeros((1, 65), np.float64)
         fgd_model = np.zeros((1, 65), np.float64)
         rect = (1, 1, img_cv.shape[1] - 2, img_cv.shape[0] - 2)

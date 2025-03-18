@@ -21,11 +21,12 @@ def load_inpainting_pipeline(controlnets=None):
             "canny": controlnet_canny,
             "depth": controlnet_depth
         }
+        
         selected_controlnets = [controlnet_map[name].to("cuda") for name in controlnets] if controlnets else None
 
         if pipeline is not None:
-            pipeline.controlnet = selected_controlnets
-            return pipeline
+            del pipeline
+            torch.cuda.empty_cache()
             
         pipeline = StableDiffusionControlNetInpaintPipeline.from_pretrained(
             "botp/stable-diffusion-v1-5-inpainting",
@@ -42,6 +43,8 @@ def load_inpainting_pipeline(controlnets=None):
         pipeline.enable_attention_slicing()
         pipeline.safety_checker = dummy_checker
         pipeline.to("cuda")
+        
+        print(f"✅ Loaded pipeline: {type(pipeline)}")
 
         return pipeline
     except Exception as e:

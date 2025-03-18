@@ -13,6 +13,7 @@ def inpaint_with_ip_sd_controlnet(
 ):
     try:
         inpainting_pipeline = load_inpainting_pipeline(controlnets=controlnets)
+
         image = image.convert("RGB")
 
         if mask is not None and isinstance(mask, Image.Image):
@@ -26,7 +27,6 @@ def inpaint_with_ip_sd_controlnet(
             mask = expand_mask(mask, kernel_size=30, iterations=5)
         elif mode == InpaintMode.KEEP_STRUCTURE:
             mask = Image.new("L", image.size, 255)
-
 
         if mask is not None and control_images is None:
             control_images = [make_inpaint_condition(image, mask)]
