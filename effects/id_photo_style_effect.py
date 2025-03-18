@@ -14,14 +14,14 @@ def apply_id_photo_effect(image):
     try:
         aligned_image = align_face(image)
 
-        optimized_image = optimize_image(aligned_image).convert("RGBA")
+        optimized_image = optimize_image(aligned_image)
 
-        image, image_mask = remove_background(optimized_image)
-        if image is None or image_mask is None:
+        image_no_bg, image_mask = remove_background(optimized_image)
+        if image_no_bg is None or image_mask is None:
             raise ValueError("Failed to remove background or generate mask")
 
         new_background = Image.new("RGBA", image.size, (255, 255, 255, 255))
-        image_with_bg = place_on_new_background(image, new_background).convert("RGB")
+        image_with_bg = place_on_new_background(image_no_bg, new_background).convert("RGB")
 
         mask_face, mask_clothes, mask_combined, face_image = generate_face_lower_mask(image, image_mask)
         if mask_face is None or mask_clothes is None or mask_combined is None:
