@@ -3,6 +3,8 @@ from configs.model_paths import MODEL_PATHS
 from diffusers import StableDiffusionControlNetInpaintPipeline, UniPCMultistepScheduler
 from models.controlnets import controlnet_openpose, controlnet_canny, controlnet_depth
 
+pipeline = None
+
 def load_inpainting_pipeline(controlnets=None):
     try:
         torch.set_num_threads(4)
@@ -10,6 +12,17 @@ def load_inpainting_pipeline(controlnets=None):
 
         def dummy_checker(images, **kwargs):
             return images, [False] * len(images)
+        
+        if pipeline is not None:
+            if controlnets:
+                controlnet_map = {
+                    "openpose": controlnet_openpose,
+                    "canny": controlnet_canny,
+                    "depth": controlnet_depth
+                }
+                selected_controlnets = [controlnet_map[name].to("cuda") for name in controlnets]
+                pipeline.controlnet = selected_controlnets
+            return pipeline
 
         controlnet_map = {
             "openpose": controlnet_openpose,

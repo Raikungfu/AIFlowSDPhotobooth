@@ -67,9 +67,6 @@ def inpaint_with_ip_sd_controlnet(
         print(f"Error during inpainting: {e}")
         return None
     finally:
-        inpainting_pipeline.to("cpu")
-        del inpainting_pipeline
-        gc.collect()
         torch.cuda.empty_cache()
 
 def inpaint_with_ip_sd(number, image, mask, face_image, prompt, negative_prompt, strength, scale, mode=InpaintMode.KEEP_FACE):
