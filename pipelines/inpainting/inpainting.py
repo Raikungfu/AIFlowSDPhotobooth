@@ -1,6 +1,7 @@
+import traceback
 import torch
 from configs.model_paths import MODEL_PATHS
-from diffusers import StableDiffusionControlNetInpaintPipeline, UniPCMultistepScheduler
+from diffusers import StableDiffusionInpaintPipeline, UniPCMultistepScheduler
 
 torch.set_num_threads(4)
 torch.set_num_interop_threads(4)
@@ -11,19 +12,10 @@ def load_inpainting_pipeline(controlnets=None):
         def dummy_checker(images, **kwargs):
             return images, [False] * len(images)
 
-        # controlnet_map = {
-        #     "openpose": controlnet_openpose,
-        #     "canny": controlnet_canny,
-        #     "depth": controlnet_depth
-        # }
-
-        #selected_controlnets = [controlnet_map[name].to("cuda") for name in controlnets] if controlnets else None
-            
-        pipeline = StableDiffusionControlNetInpaintPipeline.from_pretrained(
+        pipeline = StableDiffusionInpaintPipeline.from_pretrained(
             "botp/stable-diffusion-v1-5-inpainting",
             torch_dtype=torch.float16,
-            low_cpu_mem_usage=True,
-            #controlnet=selected_controlnets
+            low_cpu_mem_usage=True
         ).to("cuda")
 
         pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
@@ -39,6 +31,7 @@ def load_inpainting_pipeline(controlnets=None):
 
         return pipeline
     except Exception as e:
+        traceback.print_exc()
         print(f"Error during loading inpainting pipeline: {e}")
         return None
 
