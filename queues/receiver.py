@@ -52,11 +52,13 @@ class RabbitMQReceiver:
                 raise ValueError("Invalid message format")
 
             process_image(image_url, correlation_id, photo_style)
+            ch.basic_ack(delivery_tag=method.delivery_tag)
 
         except json.JSONDecodeError:
             print("Invalid JSON received.")
         except Exception as e:
             print(f"Unexpected error: {e}")
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
             traceback.print_exc()
 
 

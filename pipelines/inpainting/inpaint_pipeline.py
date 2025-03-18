@@ -31,8 +31,7 @@ def inpaint_with_ip_sd_controlnet(
         if mask is not None and control_images is None:
             control_images = [make_inpaint_condition(image, mask)]
 
-        seed = random.randint(0, 2**32 - 1)
-        generator = [torch.Generator("cpu").manual_seed(seed) for _ in range(number)]
+        generator = [torch.Generator("cpu").manual_seed(random.randint(0, 2**32 - 1)) for _ in range(number)]
             
         pipeline_args = {
             "prompt": prompt,
