@@ -3,6 +3,7 @@ from configs.model_paths import MODEL_PATHS
 from diffusers import StableDiffusionControlNetInpaintPipeline, UniPCMultistepScheduler
 from models.controlnets import controlnet_openpose, controlnet_canny, controlnet_depth
 
+pipeline = None
 
 def load_inpainting_pipeline(controlnets=None):
     global pipeline
