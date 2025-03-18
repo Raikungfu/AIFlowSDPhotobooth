@@ -38,3 +38,11 @@ class RabbitMQSender:
         except Exception as e:
             print(f"Failed to send response: {e}")
             traceback.print_exc()
+        finally:
+            self.connection.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()

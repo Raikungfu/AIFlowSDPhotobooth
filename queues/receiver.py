@@ -25,7 +25,6 @@ STYLE_PROCESSORS = {
 }
 
 bucket = initialize_firebase(cred_path, firebaseConfig)
-sender = RabbitMQSender(REPLY_QUEUE)
 
 class RabbitMQReceiver:
     def __init__(self, queue_name):
@@ -79,9 +78,11 @@ def process_image(image_url, correlation_id, photo_style):
         result = [upload_image(img, bucket) for img in processed_images]
         print(f"Processed {len(result)} images.")
 
-        sender.send_response({"CorrelationId": correlation_id, "ProcessedImageUrl": result})
+        with RabbitMQSender(REPLY_QUEUE) as sender:
+            sender.send_response({"CorrelationId": correlation_id, "ProcessedImageUrl": result})
     except Exception as e:
         error_message = str(e)
         print(f"Error: {error_message}")
         traceback.print_exc()
-        sender.send_response({"CorrelationId": correlation_id, "error": error_message})
+        with RabbitMQSender(REPLY_QUEUE) as sender:
+            sender.send_response({"CorrelationId": correlation_id, "error": error_message})
