@@ -22,7 +22,7 @@ def load_inpainting_pipeline(controlnets=None):
             "depth": controlnet_depth
         }
 
-        selected_controlnets = [controlnet_map[name].to("cuda") for name in controlnets] if controlnets else None
+        #selected_controlnets = [controlnet_map[name].to("cuda") for name in controlnets] if controlnets else None
 
         if pipeline is not None:
             del pipeline
@@ -32,7 +32,7 @@ def load_inpainting_pipeline(controlnets=None):
             "botp/stable-diffusion-v1-5-inpainting",
             torch_dtype=torch.float16,
             low_cpu_mem_usage=True,
-            controlnet=selected_controlnets
+            #controlnet=selected_controlnets
         ).to("cuda")
 
         pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
@@ -52,4 +52,4 @@ def load_inpainting_pipeline(controlnets=None):
         return None
 
 
-inpainting_pipeline = load_inpainting_pipeline(controlnets=["openpose", "canny"])
+inpainting_pipeline = load_inpainting_pipeline()
