@@ -31,7 +31,7 @@ class RabbitMQSender:
             )
             print(f"Sent response: {response}")
         except (ConnectionClosedByBroker, AMQPConnectionError, ssl.SSLEOFError) as e:
-            print("Connection lost, retrying in 5 seconds....Error:" + e)
+            print("Connection lost, retrying in 5 seconds....Error: {e}")
             RabbitMQConnection().reconnect()
             time.sleep(5)
             self.send_response(response)
