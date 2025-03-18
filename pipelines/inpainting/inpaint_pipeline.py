@@ -69,5 +69,5 @@ def inpaint_with_ip_sd_controlnet(
 
 def inpaint_with_ip_sd(number, image, mask, face_image, prompt, negative_prompt, strength, scale, mode=InpaintMode.KEEP_FACE):
     return inpaint_with_ip_sd_controlnet(
-        number, image, mask, face_image, prompt, negative_prompt, strength, scale,control_images=None,mode=mode
+        number, image, mask, face_image, prompt, negative_prompt, strength, scale, controlnets=[], control_images=[],mode=mode
     )
