@@ -5,12 +5,14 @@ from models.controlnets import controlnet_openpose, controlnet_canny, controlnet
 
 pipeline = None
 
+
+torch.set_num_threads(4)
+torch.set_num_interop_threads(4)
+
+
 def load_inpainting_pipeline(controlnets=None):
     global pipeline
     try:
-        torch.set_num_threads(4)
-        torch.set_num_interop_threads(4)
-
         def dummy_checker(images, **kwargs):
             return images, [False] * len(images)
 
