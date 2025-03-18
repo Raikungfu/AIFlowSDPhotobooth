@@ -36,8 +36,8 @@ def apply_anime_filter(image):
             face_image=face_image,
             prompt=base_prompt,
             negative_prompt=negative_prompt,
-            strength=0.8,
-            scale=9.0,
+            strength=0.9,
+            scale=12.0,
             control_images=[openpose_image, canny_image],
             controlnets=["openpose", "canny"]
         )
