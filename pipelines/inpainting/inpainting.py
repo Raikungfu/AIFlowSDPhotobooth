@@ -18,10 +18,6 @@ def load_inpainting_pipeline(controlnets=None):
         # }
 
         #selected_controlnets = [controlnet_map[name].to("cuda") for name in controlnets] if controlnets else None
-
-        if pipeline is not None:
-            del pipeline
-            torch.cuda.empty_cache()
             
         pipeline = StableDiffusionControlNetInpaintPipeline.from_pretrained(
             "botp/stable-diffusion-v1-5-inpainting",
