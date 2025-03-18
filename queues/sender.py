@@ -11,7 +11,7 @@ from configs.const.style import REPLY_QUEUE
 class RabbitMQSender:
     def __init__(self, queue_name):
         self.queue = queue_name
-        self.connection = RabbitMQConnection()
+        self.connection = RabbitMQConnection(REPLY_QUEUE)
         self.channel = self.connection.get_channel()
         self.channel.queue_declare(queue=self.queue, durable=False, exclusive=False, auto_delete=False)
 
