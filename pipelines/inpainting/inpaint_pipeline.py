@@ -4,16 +4,14 @@ import torch
 import random
 from configs.enums.inpaint_mode import InpaintMode
 from utils.masks import expand_mask
-from pipelines.inpainting.inpainting import load_inpainting_pipeline
 from utils.preprocess import make_inpaint_condition
+from pipelines.inpainting.inpainting import inpainting_pipeline
 from PIL import Image
 
 def inpaint_with_ip_sd_controlnet(
     number, image, mask, face_image, prompt, negative_prompt, strength, scale,control_images,controlnets,mode=InpaintMode.KEEP_FACE
 ):
     try:
-        inpainting_pipeline = load_inpainting_pipeline(controlnets=controlnets)
-
         image = image.convert("RGB")
 
         if mask is not None and isinstance(mask, Image.Image):

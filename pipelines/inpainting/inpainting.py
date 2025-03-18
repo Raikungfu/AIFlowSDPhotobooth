@@ -21,7 +21,7 @@ def load_inpainting_pipeline(controlnets=None):
             "canny": controlnet_canny,
             "depth": controlnet_depth
         }
-        
+
         selected_controlnets = [controlnet_map[name].to("cuda") for name in controlnets] if controlnets else None
 
         if pipeline is not None:
@@ -50,3 +50,6 @@ def load_inpainting_pipeline(controlnets=None):
     except Exception as e:
         print(f"Error during loading inpainting pipeline: {e}")
         return None
+
+
+inpainting_pipeline = load_inpainting_pipeline(controlnets=["openpose", "canny"])
