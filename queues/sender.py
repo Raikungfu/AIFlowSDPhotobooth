@@ -1,8 +1,11 @@
 import json
 import time
-import pika.exceptions
+import pika
 import traceback
 from queues.connection import RabbitMQConnection
+import ssl
+from pika.exceptions import ConnectionClosedByBroker, AMQPConnectionError
+
 
 
 class RabbitMQSender:
@@ -20,15 +23,16 @@ class RabbitMQSender:
                 reply_to=self.queue
             )
 
-
             self.channel.basic_publish(
                 exchange="",
                 routing_key=self.queue,
-                body=json.dumps(response)
+                body=json.dumps(response),
+                properties=properties
             )
             print(f"Sent response: {response}")
-        except pika.exceptions.AMQPConnectionError:
-            print("Connection lost, retrying in 5 seconds...")
+        except (ConnectionClosedByBroker, AMQPConnectionError, ssl.SSLEOFError) as e:
+            print("Connection lost, retrying in 5 seconds....Error:" + e)
+            RabbitMQConnection().reconnect()
             time.sleep(5)
             self.send_response(response)
         except Exception as e:

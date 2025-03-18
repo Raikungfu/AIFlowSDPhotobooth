@@ -1,21 +1,20 @@
 import time
 import pika
 from configs.const.style import RABBITMQ_URL
+import ssl
+from pika.exceptions import ConnectionClosedByBroker, AMQPConnectionError
+
 
 class RabbitMQConnection:
     def __init__(self):
-        self.url = RABBITMQ_URL
-        self.connection = None
-        self.channel = None
         self.connect()
 
     def connect(self, max_retries=5):
         retry_delay = 2
         for attempt in range(max_retries):
             try:
-                params = pika.URLParameters(self.url)
-
-                params.heartbeat = 60
+                params = pika.URLParameters(RABBITMQ_URL)
+                params.heartbeat = 30
                 params.connection_attempts = 5
                 params.retry_delay = 3
 
@@ -23,8 +22,10 @@ class RabbitMQConnection:
                 self.channel = self.connection.channel()
                 print("RabbitMQ connected!")
                 return
-            except pika.exceptions.AMQPConnectionError as e:
+            except (ConnectionClosedByBroker, AMQPConnectionError, ssl.SSLEOFError) as e:
                 print(f"RabbitMQ connection failed (attempt {attempt + 1}/{max_retries}): {e}")
+                self.connection = pika.BlockingConnection(params)
+                self.channel = self.connection.channel()
                 time.sleep(retry_delay)
                 retry_delay *= 2
 
@@ -37,6 +38,14 @@ class RabbitMQConnection:
                 self.connect()
             self.channel = self.connection.channel()
         return self.channel
+    
+    def reconnect(self):
+        if self.connection and self.connection.is_open:
+            self.connection.close()
+        self.connection = pika.BlockingConnection(pika.URLParameters(RABBITMQ_URL))
+        self.channel = self.connection.channel()
+        self.channel.queue_declare(queue=self.queue, durable=False, exclusive=False, auto_delete=False)
+        print("RabbitMQ reconnected!")
 
     def close(self):
         if self.connection and self.connection.is_open:
