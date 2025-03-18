@@ -34,8 +34,10 @@ class RabbitMQConnection:
         raise Exception("RabbitMQ connection failed")
 
     def get_channel(self):
-        if self.connection is None or self.connection.is_closed:
-            self.connect()
+        if self.channel is None or self.channel.is_closed:
+            if self.connection is None or self.connection.is_closed:
+                self.connect()
+            self.channel = self.connection.channel()
         return self.channel
 
     def close(self):
