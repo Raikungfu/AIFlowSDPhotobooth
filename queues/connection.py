@@ -1,6 +1,5 @@
 import time
 import pika
-import ssl
 from configs.const.style import RABBITMQ_URL
 
 class RabbitMQConnection:
@@ -19,7 +18,6 @@ class RabbitMQConnection:
                 params.heartbeat = 60
                 params.connection_attempts = 5
                 params.retry_delay = 3
-                params.ssl_options = pika.SSLOptions(ssl.create_default_context())
 
                 self.connection = pika.BlockingConnection(params)
                 self.channel = self.connection.channel()

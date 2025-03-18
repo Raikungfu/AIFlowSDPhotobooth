@@ -29,7 +29,7 @@ def start_worker():
             print(f"Connect error: {e}, try to connect after 5 second...")
             try:
                 if connection.is_open:
-                    connection.close()
+                    return
             except:
                 pass
             time.sleep(5)
