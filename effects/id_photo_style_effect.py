@@ -28,8 +28,8 @@ def apply_id_photo_effect(image):
             raise ValueError("Failed to generate face or clothes mask")
 
         edit_types = {
-            PromptType.FACE: (1, mask_face, 0.3, 4.0),
-            PromptType.CLOTHES: (6, mask_clothes, 0.5, 7.5),
+            # PromptType.FACE: (1, mask_face, 0.3, 4.0),
+            # PromptType.CLOTHES: (6, mask_clothes, 0.5, 7.5),
             PromptType.COMBINE: (6, mask_combined, 0.3, 4.0)
         }
         print(type(image_with_bg), type(mask_face), type(mask_clothes), type(mask_combined), type(face_image))
