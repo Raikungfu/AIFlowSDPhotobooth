@@ -4,12 +4,13 @@ from diffusers import (
     FluxControlNetModel, FluxMultiControlNetModel, FluxControlNetPipeline, UniPCMultistepScheduler
 )
 
+
 inpainting_pipeline = None
 
 BASE_MODEL = "black-forest-labs/FLUX.1-dev"
-CONTROLNET_UNION = "InstantX/FLUX.1-dev-Controlnet-Union-Pro"
-
+CONTROLNET_UNION = "Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro"
 LORA_PORTRAIT = "strangerzonehf/Flux-Super-Portrait-LoRA"
+
 
 def load_inpainting_pipeline():
     global inpainting_pipeline
