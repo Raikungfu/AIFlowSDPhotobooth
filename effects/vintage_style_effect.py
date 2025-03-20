@@ -1,8 +1,9 @@
 import traceback
+from configs.enums.inpaint_mode import InpaintMode
 from configs.prompt import generate_vintage_prompt
 from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd_controlnet
 from utils.background_prcessing import remove_background
-from utils.controlnet_images import create_canny_image, create_openpose_image
+from utils.controlnet_images import create_scribble_image, create_softedge_image
 from utils.optimize_image import optimize_image
 from utils.masks import generate_face_lower_mask
 
@@ -11,8 +12,13 @@ def apply_vintage_effect(image):
         optimized_image = optimize_image(image)
         image_no_bg, image_mask = remove_background(optimized_image)
 
-        openpose_image = create_openpose_image(optimized_image)
-        canny_image = create_canny_image(optimized_image)
+        softedge_image = create_softedge_image(optimized_image)
+        control_mode_softedge = 0
+        control_conditioning_scale_mode_softedge = 0.6
+
+        scribble_image = create_scribble_image(optimized_image)
+        control_mode_scribble = 0
+        control_conditioning_scale_mode_scribble = 0.8
 
         mask_face, mask_clothes, mask_combined, face_image = generate_face_lower_mask(image_no_bg, image_mask)
         if face_image is None:
@@ -29,10 +35,13 @@ def apply_vintage_effect(image):
             face_image=face_image,
             prompt=base_prompt,
             negative_prompt=negative_prompt,
-            strength=0.6,
-            scale=7.5,
-            control_images=[openpose_image, canny_image],
-            controlnets=["openpose", "canny"]
+            num_inference_steps=25,
+            guidance_scale=7.0,
+            strength=0.8,
+            control_image=[softedge_image, scribble_image],
+            control_mode=[control_mode_softedge, control_mode_scribble],
+            controlnet_conditioning_scale=[control_conditioning_scale_mode_softedge, control_conditioning_scale_mode_scribble],
+            mode=InpaintMode.KEEP_FACE
         )
 
         if not inpainted_images:

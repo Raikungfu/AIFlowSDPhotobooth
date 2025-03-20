@@ -9,7 +9,8 @@ from pipelines.inpainting.inpainting import inpainting_pipeline
 from PIL import Image
 
 def inpaint_with_ip_sd_controlnet(
-    number, image, mask, face_image, prompt, negative_prompt, strength, scale,control_images,controlnets,mode=InpaintMode.KEEP_FACE
+    number, image, mask, face_image, prompt, negative_prompt, strength, num_inference_steps, guidance_scale, 
+    control_image=None,control_mode=None,controlnet_conditioning_scale=None,mode=InpaintMode.KEEP_FACE
 ):
     try:
         image = image.convert("RGB")
@@ -26,8 +27,8 @@ def inpaint_with_ip_sd_controlnet(
         elif mode == InpaintMode.KEEP_STRUCTURE:
             mask = Image.new("L", image.size, 255)
 
-        if mask is not None and control_images is None:
-            control_images = [make_inpaint_condition(image, mask)]
+        if mask is not None and control_image is None:
+            control_image = [make_inpaint_condition(image, mask)]
 
         generator = [torch.Generator("cpu").manual_seed(random.randint(0, 2**32 - 1)) for _ in range(number)]
             
@@ -36,8 +37,8 @@ def inpaint_with_ip_sd_controlnet(
             "negative_prompt": negative_prompt,
             "image": [image],
             "strength": strength,
-            "guidance_scale": scale,
-            "num_inference_steps": 50,
+            "guidance_scale": guidance_scale,
+            "num_inference_steps": num_inference_steps,
             "height": (image.height // 8) * 8,
             "width": (image.width // 8) * 8,
             "num_images_per_prompt": number,
@@ -47,11 +48,13 @@ def inpaint_with_ip_sd_controlnet(
         if mask is not None:
             pipeline_args["mask_image"] = mask
 
-        if control_images is not None:
-            pipeline_args["control_image"] = control_images
+        if control_image is not None and control_mode is not None:
+            pipeline_args["control_mode"] = control_mode
+            pipeline_args["control_image"] = control_image
+            pipeline_args["controlnet_conditioning_scale"] = controlnet_conditioning_scale
 
         if face_image is not None:
-            pipeline_args["reference_image"] = face_image if mode == InpaintMode.KEEP_FACE else None
+            pipeline_args["reference_image"] = face_image # if mode == InpaintMode.KEEP_FACE else None
 
         with torch.no_grad():
             results = inpainting_pipeline(**pipeline_args).images
@@ -65,7 +68,8 @@ def inpaint_with_ip_sd_controlnet(
         print(f"Error during inpainting: {e}")
         return None
 
-def inpaint_with_ip_sd(number, image, mask, face_image, prompt, negative_prompt, strength, scale, mode=InpaintMode.KEEP_FACE):
+def inpaint_with_ip_sd(number, image, mask, face_image, prompt, negative_prompt, strength, num_inference_steps, guidance_scale, mode=InpaintMode.KEEP_FACE):
     return inpaint_with_ip_sd_controlnet(
-        number, image, mask, face_image, prompt, negative_prompt, strength, scale, controlnets=None, control_images=None,mode=mode
+        number, image, mask, face_image, prompt, negative_prompt, strength, num_inference_steps, guidance_scale, controlnets=None, 
+        control_images=None, controlnet_conditioning_scale=None,mode=mode
     )

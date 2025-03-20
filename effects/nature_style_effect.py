@@ -1,7 +1,7 @@
 import traceback
 import numpy as np
 from configs.prompt import generate_nature_prompt
-from utils.controlnet_images import create_depth_image
+from utils.controlnet_images import create_depth_image, create_softedge_image
 from utils.optimize_image import optimize_image
 from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd_controlnet
 from PIL import Image
@@ -14,6 +14,12 @@ def apply_nature_effect(image):
             optimized_image = Image.fromarray(optimized_image)
 
         depth_image = create_depth_image(optimized_image)
+        control_mode_depth = 2
+        control_conditioning_scale_mode_depth = 0.7
+
+        softedge_image = create_softedge_image(optimized_image)
+        control_mode_softedge = 0
+        control_conditioning_scale_mode_softedge = 1.0
 
         base_prompt, negative_prompt = generate_nature_prompt()
         print(type(optimized_image))
@@ -25,10 +31,12 @@ def apply_nature_effect(image):
             face_image=None,
             prompt=base_prompt,
             negative_prompt=negative_prompt,
-            strength=0.6,
-            scale=8.0,
-            control_images=[depth_image],
-            controlnets=["depth"]
+            num_inference_steps=30,
+            guidance_scale=7.2,
+            strength=0.75,
+            control_image=[softedge_image, depth_image],
+            control_mode=[control_mode_softedge, control_mode_depth],
+            controlnet_conditioning_scale=[control_conditioning_scale_mode_softedge, control_conditioning_scale_mode_depth],
         )
 
         return inpainted_images

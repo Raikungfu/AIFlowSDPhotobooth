@@ -1,39 +1,40 @@
 import traceback
 import torch
-from configs.model_paths import MODEL_PATHS
-from diffusers import StableDiffusionInpaintPipeline, UniPCMultistepScheduler
+from diffusers import (
+    FluxControlNetModel, FluxMultiControlNetModel, FluxControlNetPipeline, UniPCMultistepScheduler
+)
 
-torch.set_num_threads(4)
-torch.set_num_interop_threads(4)
+BASE_MODEL = "black-forest-labs/FLUX.1-dev"
+CONTROLNET_UNION = "InstantX/FLUX.1-dev-Controlnet-Union"
 
-
-def load_inpainting_pipeline(controlnets=None):
+def load_inpainting_pipeline():
     try:
         def dummy_checker(images, **kwargs):
             return images, [False] * len(images)
 
-        pipeline = StableDiffusionInpaintPipeline.from_pretrained(
-            "botp/stable-diffusion-v1-5-inpainting",
-            torch_dtype=torch.float16,
-            low_cpu_mem_usage=True
+        controlnet_union = FluxControlNetModel.from_pretrained(
+            CONTROLNET_UNION, torch_dtype=torch.bfloat16
+        ).to("cuda")
+
+        controlnet = FluxMultiControlNetModel([controlnet_union])
+
+        pipeline = FluxControlNetPipeline.from_pretrained(
+            BASE_MODEL, controlnet=controlnet, torch_dtype=torch.bfloat16
         ).to("cuda")
 
         pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
+        
+        pipeline.enable_xformers_memory_efficient_attention()
 
-        ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
-        pipeline.unet.load_state_dict(ip_adapter, strict=False)
+        pipeline.safety_checker = dummy_checker
 
         pipeline.enable_attention_slicing()
-        pipeline.safety_checker = dummy_checker
-        pipeline.to("cuda")
-        
-        print(f"✅ Loaded pipeline: {type(pipeline)}")
 
+        print("Loaded FLUX.1-dev with Union ControlNet")
         return pipeline
     except Exception as e:
         traceback.print_exc()
-        print(f"Error during loading inpainting pipeline: {e}")
+        print(f"Error loading pipeline: {e}")
         return None
-
-
+    
 inpainting_pipeline = load_inpainting_pipeline()
