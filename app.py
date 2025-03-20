@@ -1,11 +1,21 @@
 import threading
 import time
+import traceback
 import pika
 from flask import Flask
 from configs.const.style import QUEUE_NAME, RABBITMQ_URL
+from pipelines.inpainting import inpainting
 from queues.receiver import RabbitMQReceiver
 
 app = Flask(__name__)
+
+inpainting.inpainting_pipeline = inpainting.load_inpainting_pipeline()
+
+if inpainting.inpainting_pipeline is None:
+    print("❌ Failed to load pipeline. Exiting...")
+    exit(1)
+
+print("✅ Pipeline loaded successfully!")
 
 def start_worker():
     while True:
@@ -35,5 +45,9 @@ def start_worker():
             time.sleep(5)
 
 if __name__ == '__main__':
-    threading.Thread(target=start_worker, daemon=True).start()
-    app.run(host='0.0.0.0', port=5000, threaded=True)
+    try:
+        threading.Thread(target=start_worker, daemon=True).start()
+        app.run(host='0.0.0.0', port=5000, threaded=True)
+    except Exception as e:
+        traceback.print_exc()
+        print(f"Error starting worker: {e}")

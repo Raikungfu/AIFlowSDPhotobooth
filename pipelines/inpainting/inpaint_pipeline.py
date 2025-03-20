@@ -1,17 +1,20 @@
-import gc
 import traceback
 import torch
 import random
 from configs.enums.inpaint_mode import InpaintMode
+from pipelines.inpainting import inpainting
 from utils.masks import expand_mask
 from utils.preprocess import make_inpaint_condition
-from pipelines.inpainting.inpainting import inpainting_pipeline
 from PIL import Image
+
 
 def inpaint_with_ip_sd_controlnet(
     number, image, mask, face_image, prompt, negative_prompt, strength, num_inference_steps, guidance_scale, 
     control_image=None,control_mode=None,controlnet_conditioning_scale=None,mode=InpaintMode.KEEP_FACE
 ):
+    inpainting_pipeline = inpainting.inpainting_pipeline
+    if inpainting_pipeline is None:
+        raise RuntimeError("❌ Pipeline not loaded!")
     try:
         image = image.convert("RGB")
 
@@ -29,7 +32,7 @@ def inpaint_with_ip_sd_controlnet(
 
         if mask is not None and control_image is None:
             control_image = [make_inpaint_condition(image, mask)]
-
+            
         generator = [torch.Generator("cpu").manual_seed(random.randint(0, 2**32 - 1)) for _ in range(number)]
             
         pipeline_args = {
@@ -48,13 +51,13 @@ def inpaint_with_ip_sd_controlnet(
         if mask is not None:
             pipeline_args["mask_image"] = mask
 
-        if control_image is not None and control_mode is not None:
+        if control_image is not None and control_mode is not None and controlnet_conditioning_scale is not None:
             pipeline_args["control_mode"] = control_mode
             pipeline_args["control_image"] = control_image
             pipeline_args["controlnet_conditioning_scale"] = controlnet_conditioning_scale
 
         if face_image is not None:
-            pipeline_args["reference_image"] = face_image # if mode == InpaintMode.KEEP_FACE else None
+            pipeline_args["reference_image"] = face_image if mode == InpaintMode.KEEP_FACE else None
 
         with torch.no_grad():
             results = inpainting_pipeline(**pipeline_args).images
@@ -70,6 +73,5 @@ def inpaint_with_ip_sd_controlnet(
 
 def inpaint_with_ip_sd(number, image, mask, face_image, prompt, negative_prompt, strength, num_inference_steps, guidance_scale, mode=InpaintMode.KEEP_FACE):
     return inpaint_with_ip_sd_controlnet(
-        number, image, mask, face_image, prompt, negative_prompt, strength, num_inference_steps, guidance_scale, controlnets=None, 
-        control_images=None, controlnet_conditioning_scale=None,mode=mode
+        number, image, mask, face_image, prompt, negative_prompt, strength, num_inference_steps, guidance_scale, mode=mode
     )

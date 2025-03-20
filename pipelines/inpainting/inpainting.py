@@ -4,12 +4,18 @@ from diffusers import (
     FluxControlNetModel, FluxMultiControlNetModel, FluxControlNetPipeline, UniPCMultistepScheduler
 )
 
+inpainting_pipeline = None
+
 BASE_MODEL = "black-forest-labs/FLUX.1-dev"
-CONTROLNET_UNION = "InstantX/FLUX.1-dev-Controlnet-Union"
+CONTROLNET_UNION = "InstantX/FLUX.1-dev-Controlnet-Union-Pro"
 
 LORA_PORTRAIT = "strangerzonehf/Flux-Super-Portrait-LoRA"
 
 def load_inpainting_pipeline():
+    global inpainting_pipeline
+    if inpainting_pipeline is not None:
+        return inpainting_pipeline
+    
     try:
         # def dummy_checker(images, **kwargs):
         #     return images, [False] * len(images)
@@ -20,25 +26,27 @@ def load_inpainting_pipeline():
 
         controlnet = FluxMultiControlNetModel([controlnet_union])
 
-        pipeline = FluxControlNetPipeline.from_pretrained(
+        inpainting_pipeline = FluxControlNetPipeline.from_pretrained(
             BASE_MODEL, controlnet=controlnet, torch_dtype=torch.bfloat16
         ).to("cuda")
 
-        pipeline.load_lora_weights(LORA_PORTRAIT)
+        inpainting_pipeline.load_lora_weights(LORA_PORTRAIT)
 
-        pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
+        inpainting_pipeline.scheduler = UniPCMultistepScheduler.from_config(inpainting_pipeline.scheduler.config)
         
-        pipeline.enable_xformers_memory_efficient_attention()
+        inpainting_pipeline.enable_xformers_memory_efficient_attention()
 
-        pipeline.safety_checker = None 
+        inpainting_pipeline.safety_checker = None 
 
-        pipeline.enable_attention_slicing()
+        inpainting_pipeline.enable_attention_slicing()
 
         print("Loaded FLUX.1-dev with Union ControlNet")
-        return pipeline
+        return inpainting_pipeline
     except Exception as e:
         traceback.print_exc()
         print(f"Error loading pipeline: {e}")
         return None
-    
-inpainting_pipeline = load_inpainting_pipeline()
+
+def get_pipeline():
+    """Trả về pipeline đã load sẵn"""
+    return inpainting_pipeline
