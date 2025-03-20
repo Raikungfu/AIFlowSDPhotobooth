@@ -108,7 +108,7 @@ from configs.enums.prompt_type import PromptType
 
 def generate_id_photo_prompt(prompt_type=PromptType.COMBINE):
     base_prompt = (
-        "Professional ID photo, studio lighting, sharp focus, neutral background, straight-on angle, natural skin texture, neutral expression, straight posture, ultra-high resolution."
+        "Super Portrait, professional ID photo, studio lighting, sharp focus, neutral background, straight-on angle, natural skin texture, neutral expression, straight posture, ultra-high resolution."
     )
 
     if prompt_type in {PromptType.FACE, PromptType.COMBINE}:
@@ -122,7 +122,6 @@ def generate_id_photo_prompt(prompt_type=PromptType.COMBINE):
     )
 
     return base_prompt.strip(), negative_prompt.strip()
-
 
 
 def generate_id_photo_prompt_with_controlnet(prompt_type=PromptType.COMBINE):

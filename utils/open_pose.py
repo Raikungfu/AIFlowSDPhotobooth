@@ -3,8 +3,8 @@ import torch
 from controlnet_aux import OpenposeDetector
 
 def openpose_image(image):
-    open_pose = OpenposeDetector.from_pretrained("lllyasviel/Annotators")
+    processor = OpenposeDetector.from_pretrained('lllyasviel/ControlNet')
     with torch.no_grad():
-        processed_image_open_pose = open_pose(image, hand_and_face=False)
+        processed_image_open_pose = processor(image, hand_and_face=True)
     
     return processed_image_open_pose

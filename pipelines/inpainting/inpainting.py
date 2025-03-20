@@ -7,10 +7,12 @@ from diffusers import (
 BASE_MODEL = "black-forest-labs/FLUX.1-dev"
 CONTROLNET_UNION = "InstantX/FLUX.1-dev-Controlnet-Union"
 
+LORA_PORTRAIT = "strangerzonehf/Flux-Super-Portrait-LoRA"
+
 def load_inpainting_pipeline():
     try:
-        def dummy_checker(images, **kwargs):
-            return images, [False] * len(images)
+        # def dummy_checker(images, **kwargs):
+        #     return images, [False] * len(images)
 
         controlnet_union = FluxControlNetModel.from_pretrained(
             CONTROLNET_UNION, torch_dtype=torch.bfloat16
@@ -22,11 +24,13 @@ def load_inpainting_pipeline():
             BASE_MODEL, controlnet=controlnet, torch_dtype=torch.bfloat16
         ).to("cuda")
 
+        pipeline.load_lora_weights(LORA_PORTRAIT)
+
         pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
         
         pipeline.enable_xformers_memory_efficient_attention()
 
-        pipeline.safety_checker = dummy_checker
+        pipeline.safety_checker = None 
 
         pipeline.enable_attention_slicing()
 
