@@ -32,29 +32,24 @@ def apply_id_photo_effect(image):
                 generate_id_photo_prompt_with_controlnet if use_control else generate_id_photo_prompt
             )
             
-            edit_types = {
-                PromptType.COMBINE: (6, mask_combined, 0.3, 4.0)
-            }
+            base_prompt, negative_prompt = prompt_func()
+            print(f"Testing {'with' if use_control else 'without'} ControlNet")
 
-            for edit_type, (number, mask, strength, scale) in edit_types.items():
-                base_prompt, negative_prompt = prompt_func(edit_type)
-                print(f"Testing {'with' if use_control else 'without'} ControlNet")
+            inpainted_images = inpaint_with_ip_sd(
+                number=6,
+                image=image_with_bg,
+                mask=mask_combined,
+                face_image=face_image,
+                prompt=base_prompt,
+                negative_prompt=negative_prompt,
+                num_inference_steps=20,
+                guidance_scale=4.0,
+                strength=0.3,
+                mode=InpaintMode.KEEP_FACE
+            )
 
-                inpainted_images = inpaint_with_ip_sd(
-                    number,
-                    image=image_with_bg,
-                    mask=mask,
-                    face_image=face_image,
-                    prompt=base_prompt,
-                    negative_prompt=negative_prompt,
-                    num_inference_steps=20,
-                    guidance_scale=scale,
-                    strength=strength,
-                    mode=InpaintMode.KEEP_FACE
-                )
-
-                if inpainted_images:
-                    results.extend(inpainted_images)
+            if inpainted_images:
+                results.extend(inpainted_images)
 
         return results
     except Exception as e:

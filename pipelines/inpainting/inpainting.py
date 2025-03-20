@@ -31,7 +31,7 @@ def load_inpainting_pipeline():
             BASE_MODEL, controlnet=controlnet, torch_dtype=torch.bfloat16
         ).to("cuda")
 
-        inpainting_pipeline.load_lora_weights(LORA_PORTRAIT)
+        # inpainting_pipeline.load_lora_weights(LORA_PORTRAIT)
 
         inpainting_pipeline.scheduler = UniPCMultistepScheduler.from_config(inpainting_pipeline.scheduler.config)
         
@@ -49,5 +49,4 @@ def load_inpainting_pipeline():
         return None
 
 def get_pipeline():
-    """Trả về pipeline đã load sẵn"""
     return inpainting_pipeline
