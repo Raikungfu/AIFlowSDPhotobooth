@@ -18,8 +18,10 @@ def apply_fashion_effect(image):
         canny_image = create_canny_image(optimized_image)
 
         face_mask, clothes_mask, combined_mask, face_image = generate_face_lower_mask(optimized_image, image_mask)
+        
         if face_image is None:
-            raise ValueError("Cannot detect face!")
+            print("Cannot detect face!")
+
 
         base_prompt, negative_prompt = generate_fashion_style_prompt()
 

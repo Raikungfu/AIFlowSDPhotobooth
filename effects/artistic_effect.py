@@ -19,7 +19,7 @@ def apply_artistic_effects(image):
 
         mask_face, mask_clothes, mask_combined, face_image = generate_face_lower_mask(image_no_bg, image_mask)
         if face_image is None:
-            raise ValueError("Cannot detect face!")
+            print("Cannot detect face!")
 
         base_prompt, negative_prompt = generate_artistic_prompt()
 

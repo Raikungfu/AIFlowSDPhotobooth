@@ -16,6 +16,8 @@ def apply_fantasy_effect(image):
         
         image_no_bg, image_mask = remove_background(optimized_image)
         mask_face, mask_clothes, mask_combined, face_image = generate_face_lower_mask(image_no_bg, image_mask)
+        if face_image is None:
+            print("Cannot detect face!")
 
         openpose_image = create_openpose_image(optimized_image)
         depth_image = create_depth_image(optimized_image)
