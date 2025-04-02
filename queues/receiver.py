@@ -67,10 +67,9 @@ def process_image(image_url, correlation_id, photo_style):
         if image is None:
             raise ValueError("Invalid image URL")
 
-        try:
-            processor = STYLE_PROCESSORS.get(photo_style)
-        except Exception as e:
-            raise ValueError(f"Error processing style: {e}")
+        processor = STYLE_PROCESSORS.get(photo_style)
+        if not processor:
+            raise ValueError(f"Unknown photo style: {photo_style}")
 
         processed_images = processor(image)
         if not processed_images:
