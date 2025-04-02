@@ -14,14 +14,19 @@ from configs.const.style import REPLY_QUEUE
 
 STYLE_PROCESSORS = {
     "anime": process_anime,
-    "artistic_portrait": process_artistic,
+    "artistic": process_artistic,
     "cartoon": process_cartoon,
     "fantasy": process_fantasy,
-    "fashion_style": process_fashion_style,
-    "id_photo": process_id_photo,
+    "fashion style": process_fashion_style,
+    "id photo": process_id_photo,
+    "id photo (controlnet)": process_id_photo,
     "modern": process_modern_style,
     "nature": process_nature_style,
     "vintage": process_vintage,
+    "cyberpunk": process_vintage,
+    "watercolor painting": process_vintage,
+    "black & white classic": process_vintage,
+    "oil painting": process_vintage,
 }
 
 bucket = initialize_firebase(cred_path, firebaseConfig)
