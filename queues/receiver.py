@@ -34,7 +34,7 @@ class RabbitMQReceiver:
             photo_style = message.get("photoStyle")
             prompt = message.get("prompt")
             negative_prompt = message.get("negativePrompt")
-            controlnets = [s.strip() for s in message.get("Controlnets").split(",") if s.strip()] if message.get("Controlnets") else None
+            controlnets = [s.strip() for s in message.get("controlnets").split(",") if s.strip()] if message.get("controlnets") else None
             numImages = message.get("numImagesPerGen", 1)
             guidance_scale = message.get("guidanceScale", 7.5)
             strength = message.get("strength", 0.5)
