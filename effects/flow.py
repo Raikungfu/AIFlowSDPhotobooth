@@ -25,12 +25,11 @@ def process_image(
     try:
         optimized_image = align_and_optimize_image(image, "ID Photo" in photo_style)
 
-
         inpainted_images = []        
 
         if height == None or width == None:
-            height = (image.height // 16) * 16
-            width = (image.width // 16) * 16
+            height = (optimized_image.height // 16) * 16
+            width = (optimized_image.width // 16) * 16
         else:
             height = (height // 16) * 16
             width = (width // 16) * 16

@@ -18,7 +18,6 @@ def load_controlnet_pipeline():
         controlnet_union = FluxControlNetModel.from_pretrained(
             MODEL_PATHS["controlnet_union"],
             torch_dtype=torch.float16,
-            device_map={"": "cpu"}
         )
         
         if controlnet_union is None:
@@ -40,15 +39,12 @@ def load_controlnet_pipeline():
             controlnet=controlnet,
             torch_dtype=torch.float16,
             low_cpu_mem_usage=True
-        )
+        ).to("cuda")
         
         if inpainting_pipeline is None:
             print("❌ inpainting_pipeline not loaded properly")
         else:
             print("✅ inpainting_pipeline loaded successfully")
-
-        inpainting_pipeline.vae.to("cuda")
-        inpainting_pipeline.text_encoder.to("cuda")
         
         inpainting_pipeline.scheduler = UniPCMultistepScheduler.from_config(inpainting_pipeline.scheduler.config)
         inpainting_pipeline.safety_checker = dummy_checker
