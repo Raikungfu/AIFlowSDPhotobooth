@@ -1,5 +1,10 @@
-onnxruntime
+torch==2.6.0
+torchvision==0.21.0
+torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu125
+xformers==0.0.25 --index-url https://download.pytorch.org/whl/cu125
 git+https://github.com/huggingface/diffusers
+git+https://github.com/huggingface/transformers
+onnxruntime
 matplotlib
 tensorflow
 keras
@@ -12,9 +17,6 @@ firebase-admin
 rembg
 dlib
 pytesseract
-torch==2.6.0
-torchvision==0.21.0
-torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu125
 pytorchcv
 pika
 requests
