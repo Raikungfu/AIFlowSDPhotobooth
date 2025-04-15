@@ -32,8 +32,9 @@ def load_inpainting_pipeline():
             low_cpu_mem_usage=True
         )
 
+        print("inpaint properties: " + dir(inpainting_pipeline))
+
         inpainting_pipeline.vae.to("cuda")
-        inpainting_pipeline.unet.to("cuda")
         inpainting_pipeline.text_encoder.to("cuda")
         
         inpainting_pipeline.scheduler = UniPCMultistepScheduler.from_config(inpainting_pipeline.scheduler.config)
