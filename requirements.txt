@@ -22,3 +22,5 @@ pika
 requests
 controlnet-aux
 mediapipe
+accelerate
+bitsandbytes

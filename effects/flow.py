@@ -3,7 +3,7 @@ from PIL import Image
 from configs.enums.inpaint_mode import InpaintMode
 from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd_controlnet, inpaint_without_controlnet
 from utils.controlnet_images import create_controlnet_images
-from utils.preprocess import align_and_optimize_image, generate_masks, remove_bg_and_place_on_white
+from utils.preprocess import align_and_optimize_image, closestNumber, generate_masks, remove_bg_and_place_on_white
 from utils.process_input import get_flux_controlnet_mode
 
 def process_image(
@@ -28,11 +28,11 @@ def process_image(
         inpainted_images = []        
 
         if height == None or width == None:
-            height = (optimized_image.height // 16) * 16
-            width = (optimized_image.width // 16) * 16
+            height = closestNumber(optimized_image.height, 16)
+            width =  closestNumber(optimized_image.width, 16)
         else:
-            height = (height // 16) * 16
-            width = (width // 16) * 16
+            height = closestNumber(height, 16)
+            width = closestNumber(width, 16)
 
         if photo_style == "ID Photo":
             print("📸 Style: ID Photo → inpaint WITHOUT ControlNet")

@@ -28,7 +28,7 @@ def depth_image(image, model_type="DPT_Large"):
 
     input_tensor = transform(image).to(device)
 
-    with torch.no_grad():
+    with torch.inference_mode():
         prediction = model(input_tensor)
         prediction = torch.nn.functional.interpolate(
             prediction.unsqueeze(1),
@@ -68,7 +68,7 @@ def depth_image(image, model_type="DPT_Large"):
 #     input_batch = transform(image).to(device)
 #     print("Input batch shape:", input_batch.shape)
 
-#     with torch.no_grad():
+#     with torch.inference_mode():
 #         depth_map = midas(input_batch)
 
 #     depth_map = depth_map.squeeze().cpu().numpy()

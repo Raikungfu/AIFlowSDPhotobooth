@@ -58,3 +58,15 @@ def generate_masks(mode, optimized_image, image_mask):
             raise ValueError("Failed to generate face or clothes mask")
 
     return mask, face_image, mask_combined
+
+
+def closestNumber(x, y):
+    q = int(x / y)
+    x1 = y * q
+    if (x * y) <= 0:
+        x2 = y * (q - 1)
+    else:
+        x2 = y * (q + 1)
+    if abs(x - x2) > abs(x - x1):
+        return x1
+    return x2

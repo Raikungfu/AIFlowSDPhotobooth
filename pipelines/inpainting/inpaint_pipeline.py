@@ -31,7 +31,7 @@ def inpaint_with_ip_sd_controlnet(
             pipeline_args["control_image"] = control_images
             pipeline_args["controlnet_conditioning_scale"] = controlnet_conditioning_scale
 
-        with torch.no_grad():
+        with torch.inference_mode():
             results = pipeline_instance.controlnet_pipeline(**pipeline_args).images
 
             if results is None:
@@ -83,7 +83,7 @@ def inpaint_without_controlnet(
         if face_image is not None:
             pipeline_args["reference_image"] = face_image if mode == InpaintMode.KEEP_FACE else None
 
-        with torch.no_grad():
+        with torch.inference_mode():
             results = pipeline_instance.inpainting_pipeline(**pipeline_args).images
 
             if results is None:

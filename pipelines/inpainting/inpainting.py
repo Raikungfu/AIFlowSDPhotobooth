@@ -1,59 +1,46 @@
 import gc, torch, traceback
 from configs.model_paths import MODEL_PATHS
 from diffusers import (
-    FluxControlNetModel, FluxMultiControlNetModel,
-    FluxControlNetPipeline, UniPCMultistepScheduler, StableDiffusionInpaintPipeline
+    FluxPipeline, UniPCMultistepScheduler
 )
+from diffusers.hooks import apply_group_offloading
 
-
-def load_controlnet_pipeline():
+def load__pipeline():
     try:
         gc.collect()
         torch.cuda.empty_cache()
+        torch.backends.cuda.matmul.allow_tf32 = True
 
-        def dummy_checker(images, **kwargs):
-            return images, [False] * len(images)
-
-        controlnet_union = FluxControlNetModel.from_pretrained(
-            MODEL_PATHS["controlnet_union"],
-            torch_dtype=torch.float16,
-        )
-        
-        if controlnet_union is None:
-            print("❌ controlnet_union not loaded properly")
-        else:
-            print("✅ controlnet_union loaded successfully")
-
-        print("Loading controlnet...")
-        controlnet = FluxMultiControlNetModel([controlnet_union])
-        
-        if controlnet is None:
-            print("❌ controlnet not loaded properly")
-        else:
-            print("✅ controlnet loaded successfully")
-
-        print("Loading inpainting pipeline...")
-        inpainting_pipeline = FluxControlNetPipeline.from_pretrained(
+        pipe = FluxPipeline.from_pretrained(
             MODEL_PATHS["base_model"],
-            controlnet=controlnet,
-            torch_dtype=torch.float16,
+            torch_dtype=torch.bfloat16,
             low_cpu_mem_usage=True
         ).to("cuda")
-        
-        if inpainting_pipeline is None:
-            print("❌ inpainting_pipeline not loaded properly")
+
+        if pipe is None:
+            print("❌ Pipeline not loaded properly")
+            return None
         else:
-            print("✅ inpainting_pipeline loaded successfully")
-        
-        inpainting_pipeline.scheduler = UniPCMultistepScheduler.from_config(inpainting_pipeline.scheduler.config)
-        inpainting_pipeline.safety_checker = dummy_checker
+            print("✅ Pipeline loaded successfully")
 
-        inpainting_pipeline.enable_attention_slicing()
-        inpainting_pipeline.enable_xformers_memory_efficient_attention()
-        inpainting_pipeline.enable_model_cpu_offload()
+        pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
 
-        print("✅ Loaded FLUX.1-dev with Union ControlNet successfully")
-        return inpainting_pipeline
+        pipe.safety_checker = None
+        pipe.feature_extractor = None
+
+        pipe.enable_attention_slicing()
+        pipe.enable_xformers_memory_efficient_attention()
+
+        apply_group_offloading(pipe.transformer, offload_type="leaf_level", offload_device=torch.device("cpu"), onload_device=torch.device("cuda"), use_stream=True)
+        apply_group_offloading(pipe.text_encoder, offload_type="leaf_level", offload_device=torch.device("cpu"), onload_device=torch.device("cuda"), use_stream=True)
+        apply_group_offloading(pipe.text_encoder_2, offload_type="leaf_level", offload_device=torch.device("cpu"), onload_device=torch.device("cuda"), use_stream=True)
+        apply_group_offloading(pipe.vae, offload_type="leaf_level", offload_device=torch.device("cpu"), onload_device=torch.device("cuda"), use_stream=True)
+
+        pipe.vae.enable_slicing()
+        pipe.vae.enable_tiling()
+
+        print("✅ Loaded FLUX.1-dev with full optimization")
+        return pipe
 
     except Exception as e:
         traceback.print_exc()

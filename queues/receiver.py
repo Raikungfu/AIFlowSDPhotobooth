@@ -46,9 +46,6 @@ class RabbitMQReceiver:
             mode = message.get("mode", None)
             numInferenceSteps = message.get("numInferenceSteps")
 
-            print(f"numInferenceSteps: {numInferenceSteps}")
-            print(f"controlnets: {controlnets}")
-
             if not image_url or not correlation_id or not photo_style:
                 raise ValueError("Invalid message format")
             
