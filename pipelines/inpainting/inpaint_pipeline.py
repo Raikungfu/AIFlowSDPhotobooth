@@ -42,7 +42,7 @@ def inpaint_with_ip_sd_controlnet(
         pipeline_args = {
             "prompt": prompt,
             "negative_prompt": negative_prompt,
-            "image": [image],
+            # "image": [image],
             "strength": strength,
             "guidance_scale": guidance_scale,
             "num_inference_steps": num_inference_steps,
