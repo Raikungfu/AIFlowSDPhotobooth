@@ -1,11 +1,10 @@
-import os, gc, torch, traceback
+import gc, torch, traceback
 from configs.model_paths import MODEL_PATHS
 from diffusers import (
     FluxControlNetModel, FluxMultiControlNetModel,
     FluxControlNetPipeline, UniPCMultistepScheduler, StableDiffusionInpaintPipeline
 )
 
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 def load_controlnet_pipeline():
     try:
@@ -51,6 +50,7 @@ def load_controlnet_pipeline():
 
         inpainting_pipeline.enable_attention_slicing()
         inpainting_pipeline.enable_xformers_memory_efficient_attention()
+        inpainting_pipeline.enable_model_cpu_offload()
 
         print("✅ Loaded FLUX.1-dev with Union ControlNet successfully")
         return inpainting_pipeline
@@ -70,27 +70,24 @@ def load_inpainting_pipeline():
             MODEL_PATHS["inpainting_model"],
             torch_dtype=torch.float16,
             low_cpu_mem_usage=True
-        )
+        ).to("cuda")
 
         if pipeline is None:
             print("❌ inpainting_pipeline not loaded properly")
         else:
             print("✅ inpainting_pipeline loaded successfully")
 
-        print("Moving pipeline components to CUDA...")
-        pipeline.vae.to("cuda")
-        pipeline.text_encoder.to("cuda")
-        pipeline.unet.to("cuda")
+        ip_adapter = torch.load(MODEL_PATHS["ip_adapter"])
+        pipeline.unet.load_state_dict(ip_adapter, strict=False)
 
         pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
 
-        ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
-        pipeline.unet.load_state_dict(ip_adapter, strict=False)
 
         pipeline.enable_attention_slicing()
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.safety_checker = dummy_checker
-        pipeline.to("cuda")
+        
+        pipeline.enable_model_cpu_offload()
         
         print("✅ Loaded Inpainting with Stable Diffusion 1.5 successfully")
 
