@@ -4,18 +4,13 @@ import traceback
 import pika
 from flask import Flask
 from configs.const.style import QUEUE_NAME, RABBITMQ_URL
-from pipelines.inpainting import inpainting
+from pipelines.inpainting.inpainting import load_inpainting_pipeline
 from queues.receiver import RabbitMQReceiver
 
 app = Flask(__name__)
 
-inpainting.inpainting_pipeline = inpainting.load_inpainting_pipeline()
 
-if inpainting.inpainting_pipeline is None:
-    print("❌ Failed to load pipeline. Exiting...")
-    exit(1)
-
-print("✅ Pipeline loaded successfully!")
+inpainting_pipeline = load_inpainting_pipeline()
 
 def start_worker():
     while True:

@@ -7,7 +7,7 @@ def depth_image(image, model_type="DPT_Large"):
     if not isinstance(image, np.ndarray):
         image = np.array(image)
     
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")
 
     midas = torch.hub.load("intel-isl/MiDaS", model_type)
     midas.to(device)

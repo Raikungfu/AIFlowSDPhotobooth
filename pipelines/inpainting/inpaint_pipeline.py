@@ -2,7 +2,6 @@ import traceback
 import torch
 import random
 from configs.enums.inpaint_mode import InpaintMode
-from pipelines.inpainting import inpainting
 from utils.masks import expand_mask
 from utils.preprocess import make_inpaint_condition
 from PIL import Image
@@ -12,9 +11,6 @@ def inpaint_with_ip_sd_controlnet(
     number, image, mask, face_image, prompt, negative_prompt, strength, num_inference_steps, guidance_scale, height, width,
     control_images=None,control_modes=None,controlnet_conditioning_scale=None,mode=InpaintMode.KEEP_FACE
 ):
-    inpainting_pipeline = inpainting.inpainting_pipeline
-    if inpainting_pipeline is None:
-        raise RuntimeError("❌ Pipeline not loaded!")
     try:
         image = image.convert("RGB")
 

@@ -1,12 +1,28 @@
-import cv2
 from PIL import Image
+import cv2
+import numpy as np
 
-def scribble_image(image_path):
-    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    edges = cv2.Canny(image, threshold1=50, threshold2=150)
+def scribble_image(image):
+    try:
+        if isinstance(image, np.ndarray):
+            pass
+        elif isinstance(image, Image.Image):
+            image = np.array(image)
+        else:
+            raise ValueError("Input should be a PIL Image or numpy ndarray.")
 
-    scribble = 255 - edges
+        if len(image.shape) == 3:
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
-    scribble_image = Image.fromarray(scribble)
+        edges = cv2.Canny(image, threshold1=50, threshold2=150)
 
-    return scribble_image
+        scribble = 255 - edges
+
+        scribble_image = Image.fromarray(scribble)
+
+        return scribble_image
+    except Exception as e:
+        print(f"Error creating softedge image: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
