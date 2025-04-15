@@ -8,7 +8,7 @@ from diffusers import (
 inpainting_pipeline = None
 
 BASE_MODEL = "black-forest-labs/FLUX.1-dev"
-CONTROLNET_UNION = "Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro"
+CONTROLNET_UNION = "Shakker-Labs/FLUX.1-dev-ControlNet-Union"
 # LORA_PORTRAIT = "strangerzonehf/Flux-Super-Portrait-LoRA"
 
 
@@ -23,8 +23,7 @@ def load_inpainting_pipeline():
 
         controlnet_union = FluxControlNetModel.from_pretrained(
             CONTROLNET_UNION, 
-            torch_dtype=torch.bfloat16,
-            low_cpu_mem_usage=True,
+            torch_dtype=torch.float16
         ).to("cuda")
 
         controlnet = FluxMultiControlNetModel([controlnet_union])
@@ -32,19 +31,16 @@ def load_inpainting_pipeline():
         inpainting_pipeline = FluxControlNetPipeline.from_pretrained(
             BASE_MODEL,
             controlnet=controlnet,
-            torch_dtype=torch.bfloat16,
-            low_cpu_mem_usage=True,
+            torch_dtype=torch.float16
         ).to("cuda")
 
         # inpainting_pipeline.load_lora_weights(LORA_PORTRAIT)
 
         inpainting_pipeline.scheduler = UniPCMultistepScheduler.from_config(inpainting_pipeline.scheduler.config)
-        
-        inpainting_pipeline.enable_xformers_memory_efficient_attention()
 
-        inpainting_pipeline.safety_checker = None 
-
+        inpainting_pipeline.safety_checker = dummy_checker
         inpainting_pipeline.enable_attention_slicing()
+        inpainting_pipeline.enable_xformers_memory_efficient_attention()
 
         print("Loaded FLUX.1-dev with Union ControlNet")
         return inpainting_pipeline

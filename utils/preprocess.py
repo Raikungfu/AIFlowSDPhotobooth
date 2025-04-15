@@ -4,7 +4,6 @@ from PIL import Image
 
 from configs.enums.inpaint_mode import InpaintMode
 from utils.background_prcessing import place_on_new_background, remove_background
-from utils.controlnet_images import create_controlnet_images
 from utils.face_alignment import align_face
 from utils.masks import generate_face_lower_mask
 from utils.optimize_image import optimize_image
