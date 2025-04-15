@@ -1,15 +1,13 @@
 import os, gc, torch, traceback
+from configs.model_paths import MODEL_PATHS
 from diffusers import (
     FluxControlNetModel, FluxMultiControlNetModel,
-    FluxControlNetPipeline, UniPCMultistepScheduler
+    FluxControlNetPipeline, UniPCMultistepScheduler, StableDiffusionInpaintPipeline
 )
 
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
-BASE_MODEL = "black-forest-labs/FLUX.1-dev"
-CONTROLNET_UNION = "Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro"
-
-def load_inpainting_pipeline():
+def load_controlnet_pipeline():
     try:
         gc.collect()
         torch.cuda.empty_cache()
@@ -18,7 +16,7 @@ def load_inpainting_pipeline():
             return images, [False] * len(images)
 
         controlnet_union = FluxControlNetModel.from_pretrained(
-            CONTROLNET_UNION,
+            MODEL_PATHS["controlnet_union"],
             torch_dtype=torch.float16,
             device_map={"": "cpu"}
         )
@@ -38,7 +36,7 @@ def load_inpainting_pipeline():
 
         print("Loading inpainting pipeline...")
         inpainting_pipeline = FluxControlNetPipeline.from_pretrained(
-            BASE_MODEL,
+            MODEL_PATHS["base_model"],
             controlnet=controlnet,
             torch_dtype=torch.float16,
             low_cpu_mem_usage=True
@@ -67,44 +65,41 @@ def load_inpainting_pipeline():
         return None
 
 
+def load_inpainting_pipeline():
+    try:
+        def dummy_checker(images, **kwargs):
+            return images, [False] * len(images)
 
-# import traceback
-# import torch
-# from diffusers import (
-#     FluxControlNetModel, FluxMultiControlNetModel, FluxControlNetPipeline, UniPCMultistepScheduler
-# )
+        pipeline = StableDiffusionInpaintPipeline.from_pretrained(
+            MODEL_PATHS["inpainting_model"],
+            torch_dtype=torch.float16,
+            low_cpu_mem_usage=True
+        )
 
-# BASE_MODEL = "black-forest-labs/FLUX.1-dev"
-# CONTROLNET_UNION = "Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro"
-# # LORA_PORTRAIT = "strangerzonehf/Flux-Super-Portrait-LoRA"
+        if pipeline is None:
+            print("❌ inpainting_pipeline not loaded properly")
+        else:
+            print("✅ inpainting_pipeline loaded successfully")
 
-# def load_inpainting_pipeline():
-#     try:
-#         def dummy_checker(images, **kwargs):
-#             return images, [False] * len(images)
+        print("Moving pipeline components to CUDA...")
+        pipeline.vae.to("cuda")
+        pipeline.text_encoder.to("cuda")
+        pipeline.unet.to("cuda")
 
-#         controlnet_union = FluxControlNetModel.from_pretrained(CONTROLNET_UNION, torch_dtype=torch.float16, device_map={"": "cpu"})
-#         controlnet = FluxMultiControlNetModel([controlnet_union])
+        pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
 
-#         inpainting_pipeline = FluxControlNetPipeline.from_pretrained(BASE_MODEL, controlnet=controlnet, torch_dtype=torch.float16, low_cpu_mem_usage=True)
-#         inpainting_pipeline.to("cuda")
+        ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
+        pipeline.unet.load_state_dict(ip_adapter, strict=False)
 
-#         # inpainting_pipeline.vae.to("cuda")
-#         # inpainting_pipeline.unet.to("cuda")
-#         # inpainting_pipeline.text_encoder.to("cuda")
-
-#         # inpainting_pipeline.load_lora_weights(LORA_PORTRAIT)
-
-#         inpainting_pipeline.scheduler = UniPCMultistepScheduler.from_config(inpainting_pipeline.scheduler.config)
-
-#         inpainting_pipeline.safety_checker = dummy_checker
-#         inpainting_pipeline.enable_attention_slicing()
+        pipeline.enable_attention_slicing()
+        pipeline.enable_xformers_memory_efficient_attention()
+        pipeline.safety_checker = dummy_checker
+        pipeline.to("cuda")
         
-#         # inpainting_pipeline.enable_xformers_memory_efficient_attention()
+        print("✅ Loaded Inpainting with Stable Diffusion 1.5 successfully")
 
-#         print("Loaded FLUX.1-dev with Union ControlNet")
-#         return inpainting_pipeline
-#     except Exception as e:
-#         traceback.print_exc()
-#         print(f"Error loading pipeline: {e}")
-#         return None
+        return pipeline
+    except Exception as e:
+        traceback.print_exc()
+        print(f"Error during loading inpainting pipeline: {e}")
+        return None

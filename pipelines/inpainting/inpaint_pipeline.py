@@ -9,8 +9,43 @@ from pipelines.inpainting import pipeline_instance
 
 
 def inpaint_with_ip_sd_controlnet(
-    number, image, mask, face_image, prompt, negative_prompt, strength, num_inference_steps, guidance_scale, height, width,
-    control_images=None,control_modes=None,controlnet_conditioning_scale=None,mode=InpaintMode.KEEP_FACE
+    number, prompt, negative_prompt, num_inference_steps, guidance_scale, height, width,
+    control_images=None,control_modes=None,controlnet_conditioning_scale=None
+):
+    try:
+        generator = [torch.Generator("cpu").manual_seed(random.randint(0, 2**32 - 1)) for _ in range(number)]
+            
+        pipeline_args = {
+            "prompt": prompt,
+            "negative_prompt": negative_prompt,
+            "guidance_scale": guidance_scale,
+            "num_inference_steps": num_inference_steps,
+            "height": height,
+            "width": width,
+            "num_images_per_prompt": number,
+            "generator": generator
+        }
+
+        if control_images is not None and control_modes is not None and controlnet_conditioning_scale is not None:
+            pipeline_args["control_mode"] = control_modes
+            pipeline_args["control_image"] = control_images
+            pipeline_args["controlnet_conditioning_scale"] = controlnet_conditioning_scale
+
+        with torch.no_grad():
+            results = pipeline_instance.controlnet_pipeline(**pipeline_args).images
+
+            if results is None:
+                raise ValueError("Error: 'inpainting_pipeline()' return null!")
+
+        return results
+    except Exception as e:
+        traceback.print_exc()
+        print(f"Error during inpainting: {e}")
+        return None
+    
+
+def inpaint_without_controlnet(
+    number, image, mask, face_image, prompt, negative_prompt, strength, num_inference_steps, guidance_scale, height, width,mode=InpaintMode.KEEP_FACE
 ):
     try:
         image = image.convert("RGB")
@@ -42,7 +77,7 @@ def inpaint_with_ip_sd_controlnet(
         pipeline_args = {
             "prompt": prompt,
             "negative_prompt": negative_prompt,
-            # "image": [image],
+            "image": [image],
             "strength": strength,
             "guidance_scale": guidance_scale,
             "num_inference_steps": num_inference_steps,
@@ -54,11 +89,6 @@ def inpaint_with_ip_sd_controlnet(
 
         if mask is not None:
             pipeline_args["mask_image"] = mask
-
-        if control_images is not None and control_modes is not None and controlnet_conditioning_scale is not None:
-            pipeline_args["control_mode"] = control_modes
-            pipeline_args["control_image"] = control_images
-            pipeline_args["controlnet_conditioning_scale"] = controlnet_conditioning_scale
 
         if face_image is not None:
             pipeline_args["reference_image"] = face_image if mode == InpaintMode.KEEP_FACE else None
