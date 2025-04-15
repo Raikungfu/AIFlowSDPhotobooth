@@ -5,6 +5,7 @@ from configs.enums.inpaint_mode import InpaintMode
 from utils.masks import expand_mask
 from utils.preprocess import make_inpaint_condition
 from PIL import Image
+from pipelines.inpainting import pipeline_instance
 
 
 def inpaint_with_ip_sd_controlnet(
@@ -63,7 +64,7 @@ def inpaint_with_ip_sd_controlnet(
             pipeline_args["reference_image"] = face_image if mode == InpaintMode.KEEP_FACE else None
 
         with torch.no_grad():
-            results = inpainting_pipeline(**pipeline_args).images
+            results = pipeline_instance.inpainting_pipeline(**pipeline_args).images
 
             if results is None:
                 raise ValueError("Error: 'inpainting_pipeline()' return null!")

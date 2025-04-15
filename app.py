@@ -4,13 +4,11 @@ import traceback
 import pika
 from flask import Flask
 from configs.const.style import QUEUE_NAME, RABBITMQ_URL
-from pipelines.inpainting.inpainting import load_inpainting_pipeline
 from queues.receiver import RabbitMQReceiver
+from pipelines.inpainting.inpainting import load_inpainting_pipeline
+from pipelines.inpainting import pipeline_instance
 
 app = Flask(__name__)
-
-
-inpainting_pipeline = load_inpainting_pipeline()
 
 def start_worker():
     while True:
@@ -41,6 +39,7 @@ def start_worker():
 
 if __name__ == '__main__':
     try:
+        pipeline_instance.inpainting_pipeline = load_inpainting_pipeline()
         threading.Thread(target=start_worker, daemon=True).start()
         app.run(host='0.0.0.0', port=5000, threaded=True)
     except Exception as e:
