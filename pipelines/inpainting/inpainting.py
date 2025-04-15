@@ -9,7 +9,7 @@ inpainting_pipeline = None
 
 BASE_MODEL = "black-forest-labs/FLUX.1-dev"
 CONTROLNET_UNION = "Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro"
-LORA_PORTRAIT = "strangerzonehf/Flux-Super-Portrait-LoRA"
+# LORA_PORTRAIT = "strangerzonehf/Flux-Super-Portrait-LoRA"
 
 
 def load_inpainting_pipeline():
@@ -18,17 +18,22 @@ def load_inpainting_pipeline():
         return inpainting_pipeline
     
     try:
-        # def dummy_checker(images, **kwargs):
-        #     return images, [False] * len(images)
+        def dummy_checker(images, **kwargs):
+            return images, [False] * len(images)
 
         controlnet_union = FluxControlNetModel.from_pretrained(
-            CONTROLNET_UNION, torch_dtype=torch.bfloat16
+            CONTROLNET_UNION, 
+            torch_dtype=torch.bfloat16,
+            low_cpu_mem_usage=True,
         ).to("cuda")
 
         controlnet = FluxMultiControlNetModel([controlnet_union])
 
         inpainting_pipeline = FluxControlNetPipeline.from_pretrained(
-            BASE_MODEL, controlnet=controlnet, torch_dtype=torch.bfloat16
+            BASE_MODEL,
+            controlnet=controlnet,
+            torch_dtype=torch.bfloat16,
+            low_cpu_mem_usage=True,
         ).to("cuda")
 
         # inpainting_pipeline.load_lora_weights(LORA_PORTRAIT)

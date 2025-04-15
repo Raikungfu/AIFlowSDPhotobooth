@@ -28,13 +28,11 @@ def make_inpaint_condition(image, image_mask=None):
 
 
 def align_and_optimize_image(image, should_align: bool = False):
+    image = optimize_image(image)
     if(should_align):
-        aligned = align_face(image)
-        return optimize_image(aligned)
-    else:
-        return optimize_image(image)
+        return align_face(image)
+    return image
     
-
 
 def remove_bg_and_place_on_white(optimized_image, background_remover):
     if not background_remover:
