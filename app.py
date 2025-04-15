@@ -39,8 +39,8 @@ def start_worker():
 
 if __name__ == '__main__':
     try:
-        #pipeline_instance.controlnet_pipeline = load_inpainting_controlnet_pipeline()
-        pipeline_instance.inpainting_pipeline = load_inpainting_pipeline()
+        pipeline_instance.controlnet_pipeline = load_inpainting_controlnet_pipeline(controlnets=["openpose", "canny"])
+        # pipeline_instance.inpainting_pipeline = load_inpainting_pipeline()
         threading.Thread(target=start_worker, daemon=True).start()
         app.run(host='0.0.0.0', port=5000, threaded=True)
     except Exception as e:

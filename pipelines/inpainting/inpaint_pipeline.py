@@ -9,30 +9,34 @@ from pipelines.inpainting import pipeline_instance
 
 
 def inpaint_with_ip_sd_controlnet(
-    number, prompt, negative_prompt, num_inference_steps, guidance_scale, height, width,
-    control_images=None,control_modes=None,controlnet_conditioning_scale=None
+    number, image, mask, face_image, prompt, negative_prompt, strength, guidance_scale,control_images, num_inference_steps, height, width,mode=InpaintMode.KEEP_FACE
 ):
     try:
         generator = [torch.Generator("cpu").manual_seed(random.randint(0, 2**32 - 1)) for _ in range(number)]
             
         pipeline_args = {
+            "image": [image],
             "prompt": prompt,
             "negative_prompt": negative_prompt,
+            "strength": strength,
             "guidance_scale": guidance_scale,
             "num_inference_steps": num_inference_steps,
             "height": height,
             "width": width,
             "num_images_per_prompt": number,
-            "generator": generator
+            "generator": generator,
+            "control_image": control_images,
         }
 
-        if control_images is not None and control_modes is not None and controlnet_conditioning_scale is not None:
-            pipeline_args["control_mode"] = control_modes
-            pipeline_args["control_image"] = control_images
-            pipeline_args["controlnet_conditioning_scale"] = controlnet_conditioning_scale
+        if mask is not None:
+            pipeline_args["mask_image"] = mask
+        
+        if face_image is not None:
+            pipeline_args["reference_image"] = face_image if mode == InpaintMode.KEEP_FACE else None
 
         with torch.inference_mode():
             results = pipeline_instance.controlnet_pipeline(**pipeline_args).images
+
 
             if results is None:
                 raise ValueError("Error: 'inpainting_pipeline()' return null!")

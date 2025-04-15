@@ -55,20 +55,21 @@ def process_image(
         else:
             print("🎨 Style: Other → inpaint WITH ControlNet")
             control_images = create_controlnet_images(controlnets, optimized_image)
-
-            control_modes = [get_flux_controlnet_mode(cn["type"]) for cn in controlnets]
-            conditioning_scales = [cn["weight"] for cn in controlnets]
+            image_with_bg, image_mask = remove_bg_and_place_on_white(optimized_image, background_remover)
+            mask, face_image, mask_combined = generate_masks(mode, optimized_image, image_mask)
             inpainted_images = inpaint_with_ip_sd_controlnet(
                 number=numImages,
+                image=image_with_bg,
+                mask=mask,
+                face_image=face_image,
                 prompt=prompt,
                 negative_prompt=negative_prompt,
+                strength=strength,
                 num_inference_steps=numInferenceSteps,
                 guidance_scale=guidance_scale,
                 height=height,
                 width=width,
                 control_images=control_images if control_images else None,
-                control_modes=control_modes,
-                controlnet_conditioning_scale=conditioning_scales
             )
         
         return inpainted_images
