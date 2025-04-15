@@ -3,7 +3,6 @@ import torch
 import random
 from configs.enums.inpaint_mode import InpaintMode
 from utils.masks import expand_mask
-from utils.preprocess import make_inpaint_condition
 from PIL import Image
 from pipelines.inpainting import pipeline_instance
 
@@ -12,6 +11,20 @@ def inpaint_with_ip_sd_controlnet(
     number, image, mask, face_image, prompt, negative_prompt, strength, guidance_scale,control_images, num_inference_steps, height, width,mode=InpaintMode.KEEP_FACE
 ):
     try:
+        image = image.convert("RGB")
+
+        if mask is not None and isinstance(mask, Image.Image):
+            mask = mask.convert("L")
+
+        if mask is None:
+            print("Warning: mask is None. Creating a default white mask.")
+            mask = Image.new("L", image.size, 255)
+            
+        if mode == InpaintMode.KEEP_FACE:
+            mask = expand_mask(mask, kernel_size=30, iterations=5)
+        elif mode == InpaintMode.KEEP_STRUCTURE:
+            mask = Image.new("L", image.size, 255)
+            
         generator = [torch.Generator("cpu").manual_seed(random.randint(0, 2**32 - 1)) for _ in range(number)]
             
         pipeline_args = {
@@ -36,7 +49,6 @@ def inpaint_with_ip_sd_controlnet(
 
         with torch.inference_mode():
             results = pipeline_instance.controlnet_pipeline(**pipeline_args).images
-
 
             if results is None:
                 raise ValueError("Error: 'inpainting_pipeline()' return null!")
