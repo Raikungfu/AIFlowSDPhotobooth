@@ -7,6 +7,7 @@ from utils.firebase_utils import initialize_firebase
 from utils.image_upload import download_image, upload_image
 from configs.const.config import cred_path, firebaseConfig
 from configs.const.style import REPLY_QUEUE
+from utils.process_input import parse_controlnets
 
 bucket = initialize_firebase(cred_path, firebaseConfig)
 
@@ -34,7 +35,7 @@ class RabbitMQReceiver:
             photo_style = message.get("photoStyle")
             prompt = message.get("prompt")
             negative_prompt = message.get("negativePrompt")
-            controlnets = [s.strip() for s in message.get("controlnets").split(",") if s.strip()] if message.get("controlnets") else None
+            controlnets = parse_controlnets(message.get("controlnets")) if message.get("controlnets") else None
             numImages = message.get("numImagesPerGen", 1)
             guidance_scale = message.get("guidanceScale", 7.5)
             strength = message.get("strength", 0.5)
