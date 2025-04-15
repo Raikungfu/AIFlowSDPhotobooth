@@ -8,7 +8,7 @@ from diffusers import (
 inpainting_pipeline = None
 
 BASE_MODEL = "black-forest-labs/FLUX.1-dev"
-CONTROLNET_UNION = "Shakker-Labs/FLUX.1-dev-ControlNet-Union"
+CONTROLNET_UNION = "Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro"
 # LORA_PORTRAIT = "strangerzonehf/Flux-Super-Portrait-LoRA"
 
 
