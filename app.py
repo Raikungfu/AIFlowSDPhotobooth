@@ -5,7 +5,7 @@ import pika
 from flask import Flask
 from configs.const.style import QUEUE_NAME, RABBITMQ_URL
 from queues.receiver import RabbitMQReceiver
-from pipelines.inpainting.inpainting import load_flux_pipeline, load_inpainting_pipeline
+from pipelines.inpainting.inpainting import load_inpainting_controlnet_pipeline, load_inpainting_pipeline
 from pipelines.inpainting import pipeline_instance
 
 app = Flask(__name__)
@@ -39,7 +39,7 @@ def start_worker():
 
 if __name__ == '__main__':
     try:
-        pipeline_instance.controlnet_pipeline = load_flux_pipeline()
+        #pipeline_instance.controlnet_pipeline = load_inpainting_controlnet_pipeline()
         pipeline_instance.inpainting_pipeline = load_inpainting_pipeline()
         threading.Thread(target=start_worker, daemon=True).start()
         app.run(host='0.0.0.0', port=5000, threaded=True)
