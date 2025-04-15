@@ -2,6 +2,13 @@ import torch
 import numpy as np
 from PIL import Image
 
+from configs.enums.inpaint_mode import InpaintMode
+from utils.background_prcessing import place_on_new_background, remove_background
+from utils.controlnet_images import create_controlnet_images
+from utils.face_alignment import align_face
+from utils.masks import generate_face_lower_mask
+from utils.optimize_image import optimize_image
+
 def make_inpaint_condition(image, image_mask=None):
     image = np.array(image.convert("RGB")).astype(np.float32) / 255.0
     
@@ -18,3 +25,39 @@ def make_inpaint_condition(image, image_mask=None):
     image = torch.from_numpy(image)
     
     return image
+
+
+def align_and_optimize_image(image, should_align: bool = False):
+    if(should_align):
+        aligned = align_face(image)
+        return optimize_image(aligned)
+    else:
+        return optimize_image(image)
+    
+
+
+def remove_bg_and_place_on_white(optimized_image, background_remover):
+    if not background_remover:
+        return optimized_image, None
+
+    image_no_bg, image_mask = remove_background(optimized_image)
+    if image_no_bg is None or image_mask is None:
+        raise ValueError("Failed to remove background or generate mask")
+
+    white_bg = Image.new("RGBA", optimized_image.size, (255, 255, 255, 255))
+    image_with_bg = place_on_new_background(image_no_bg, white_bg).convert("RGB")
+    return image_with_bg, image_mask
+
+
+def generate_masks(mode, optimized_image, image_mask):
+    mask = mask_combined = face_image = None
+
+    if mode == InpaintMode.KEEP_STRUCTURE:
+        mask = optimized_image.convert("L")
+
+    elif mode == InpaintMode.KEEP_FACE:
+        mask_face, mask_clothes, mask_combined, face_image = generate_face_lower_mask(optimized_image, image_mask)
+        if not all([mask_face, mask_clothes, mask_combined]):
+            raise ValueError("Failed to generate face or clothes mask")
+
+    return mask, face_image, mask_combined

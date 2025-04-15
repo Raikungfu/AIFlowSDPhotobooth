@@ -45,6 +45,7 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
         eye_center_y = (left_eye_y + right_eye_y) // 2
 
         img_h, img_w = aligned_image.shape[:2]
+        
         move_x = img_w // 2 - (x + w // 2)
         target_eye_y = int((2/5) * img_h)
         move_y = target_eye_y - eye_center_y
@@ -52,18 +53,34 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
         translation_matrix = np.float32([[1, 0, move_x], [0, 1, move_y]])
         aligned_image = cv2.warpAffine(aligned_image, translation_matrix, (img_w, img_h))
 
-        target_height = img_h / face_ratio
+        face_h = rotated_face.height()
+        face_w = rotated_face.width()
+
+        target_height = face_h / face_ratio
         target_width = target_height * (aspect_ratio[0] / aspect_ratio[1])
-        center_x = img_w // 2
-        
-        crop_x1 = max(int(center_x - target_width // 2), 0)
-        crop_x2 = min(int(center_x + target_width // 2), img_w)
-        crop_y1 = max(int(target_eye_y - target_height / 3), 0)
-        crop_y2 = min(int(crop_y1 + target_height), img_h)
 
-        cropped_image = aligned_image[crop_y1:crop_y2, crop_x1:crop_x2]
-        return Image.fromarray(cropped_image)
+        canvas_w, canvas_h = int(target_width), int(target_height)
+        canvas = np.ones((canvas_h, canvas_w, 3), dtype=np.uint8) * 255
 
+        center_x = rotated_face.left() + rotated_face.width() // 2
+        center_y = rotated_face.top() + rotated_face.height() // 2
+
+        crop_x1 = int(center_x - canvas_w / 2)
+        crop_y1 = int(center_y - canvas_h / 2)
+
+        start_x = max(-crop_x1, 0)
+        start_y = max(-crop_y1, 0)
+        end_x = min(canvas_w, img_w - crop_x1)
+        end_y = min(canvas_h, img_h - crop_y1)
+
+        src_x1 = max(crop_x1, 0)
+        src_y1 = max(crop_y1, 0)
+        src_x2 = src_x1 + (end_x - start_x)
+        src_y2 = src_y1 + (end_y - start_y)
+
+        canvas[start_y:end_y, start_x:end_x] = aligned_image[src_y1:src_y2, src_x1:src_x2]
+
+        return Image.fromarray(canvas)
     except Exception as e:
         print(f"Error in face alignment: {e}")
         import traceback

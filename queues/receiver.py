@@ -1,28 +1,12 @@
 import json
 import traceback
+from effects.flow import process_image
 from queues.connection import RabbitMQConnection
 from queues.sender import RabbitMQSender
 from utils.firebase_utils import initialize_firebase
 from utils.image_upload import download_image, upload_image
-from effects.photo_style_flow import (
-    process_artistic, process_anime, process_cartoon, process_fantasy,
-    process_fashion_style, process_id_photo, process_modern_style,
-    process_nature_style, process_vintage
-)
 from configs.const.config import cred_path, firebaseConfig
 from configs.const.style import REPLY_QUEUE
-
-STYLE_PROCESSORS = {
-    "anime": process_anime,
-    "artistic_portrait": process_artistic,
-    "cartoon": process_cartoon,
-    "fantasy": process_fantasy,
-    "fashion_style": process_fashion_style,
-    "id_photo": process_id_photo,
-    "modern": process_modern_style,
-    "nature": process_nature_style,
-    "vintage": process_vintage,
-}
 
 bucket = initialize_firebase(cred_path, firebaseConfig)
 
@@ -45,42 +29,52 @@ class RabbitMQReceiver:
 
             image_url = message.get("imageUrl")
             correlation_id = message.get("correlationId")
+            photo_style_id = message.get("photoStyleId")
+            session_code = message.get("sessionCode")
             photo_style = message.get("photoStyle")
+            prompt = message.get("prompt")
+            negative_prompt = message.get("negativePrompt")
+            controlnets = [s.strip() for s in message.get("Controlnets").split(",") if s.strip()] if message.get("Controlnets") else None
+            numImages = message.get("numImagesPerGen", 1)
+            guidance_scale = message.get("guidanceScale", 7.5)
+            strength = message.get("strength", 0.5)
+            face_image = message.get("faceImage")
+            background_remover = message.get("backgroundRemover", False)
+            height = message.get("height", None)
+            width = message.get("width", None)
+            mode = message.get("mode", None)
+            numInferenceSteps = message.get("numInferenceSteps")
+
+            print(f"numInferenceSteps: {numInferenceSteps}")
+            print(f"controlnets: {controlnets}")
 
             if not image_url or not correlation_id or not photo_style:
                 raise ValueError("Invalid message format")
+            
+            try:
+                image = download_image(image_url)
+                if image is None:
+                    raise ValueError("Invalid image URL")
 
-            process_image(image_url, correlation_id, photo_style)
+                processed_images = process_image(image, photo_style, prompt, negative_prompt, controlnets, numImages, numInferenceSteps, guidance_scale, strength, face_image, background_remover, height, width, mode)
+                if not processed_images:
+                    raise ValueError("Failed to process image")
+
+                result = [upload_image(img, bucket) for img in processed_images]
+                print(f"Processed {len(result)} images.")
+
+                with RabbitMQSender(REPLY_QUEUE) as sender:
+                    sender.send_response({"CorrelationId": correlation_id, "ProcessedImageUrl": result, "SessionCode": session_code, "PhotoStyleId": photo_style_id})
+            except Exception as e:
+                error_message = str(e)
+                print(f"Error: {error_message}")
+                traceback.print_exc()
+                with RabbitMQSender(REPLY_QUEUE) as sender:
+                    sender.send_response({"CorrelationId": correlation_id, "error": error_message})
+
         except json.JSONDecodeError:
             print("Invalid JSON received.")
         except Exception as e:
             print(f"Unexpected error: {e}")
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
             traceback.print_exc()
-
-
-def process_image(image_url, correlation_id, photo_style):
-    try:
-        image = download_image(image_url)
-        if image is None:
-            raise ValueError("Invalid image URL")
-
-        processor = STYLE_PROCESSORS.get(photo_style)
-        if not processor:
-            raise ValueError(f"Unknown photo style: {photo_style}")
-
-        processed_images = processor(image)
-        if not processed_images:
-            raise ValueError("Failed to process image")
-
-        result = [upload_image(img, bucket) for img in processed_images]
-        print(f"Processed {len(result)} images.")
-
-        with RabbitMQSender(REPLY_QUEUE) as sender:
-            sender.send_response({"CorrelationId": correlation_id, "ProcessedImageUrl": result})
-    except Exception as e:
-        error_message = str(e)
-        print(f"Error: {error_message}")
-        traceback.print_exc()
-        with RabbitMQSender(REPLY_QUEUE) as sender:
-            sender.send_response({"CorrelationId": correlation_id, "error": error_message})

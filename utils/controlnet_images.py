@@ -7,6 +7,7 @@ from utils.open_pose import openpose_image
 from utils.scribble import scribble_image
 from utils.soft_edge import softedge_image
 
+
 def process_image(image, processing_function):
     image = processing_function(image)
     return Image.fromarray(image) if isinstance(image, np.ndarray) else image
@@ -14,15 +15,39 @@ def process_image(image, processing_function):
 def create_depth_image(image):
     return process_image(image, depth_image)
 
-def create_openpose_image(image):
+def create_pose_image(image):
     return process_image(image, openpose_image)
 
 def create_canny_image(image):
     return process_image(image, canny_image)
 
-
-def create_softedge_image(image):
+def create_soft_edge_image(image):
     return process_image(image, softedge_image)
+
 
 def create_scribble_image(image):
     return process_image(image, scribble_image)
+
+
+def create_controlnet_images(controlnets, image):
+    controlnet_images = []
+    if not controlnets:
+        return []
+
+    for controlnet in controlnets:
+        control_type = controlnet["type"]
+        
+        if control_type == "depth":
+            controlnet_images.append(create_depth_image(image))
+        elif control_type == "pose":
+            controlnet_images.append(create_pose_image(image))
+        elif control_type == "canny":
+            controlnet_images.append(create_canny_image(image))
+        elif control_type == "softedge":
+            controlnet_images.append(create_soft_edge_image(image))
+        elif control_type == "scribble":
+            controlnet_images.append(create_scribble_image(image))
+        else:
+            raise ValueError(f"Unknown controlnet: {control_type}")
+    
+    return controlnet_images
