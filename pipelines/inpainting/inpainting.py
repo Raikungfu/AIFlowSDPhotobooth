@@ -4,7 +4,6 @@ from diffusers import (
     FluxControlNetPipeline, UniPCMultistepScheduler
 )
 
-# ⚙️ Tối ưu memory allocation để tránh phân mảnh
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 BASE_MODEL = "black-forest-labs/FLUX.1-dev"
@@ -23,16 +22,32 @@ def load_inpainting_pipeline():
             torch_dtype=torch.float16,
             device_map={"": "cpu"}
         )
-        controlnet = FluxMultiControlNetModel([controlnet_union])
+        
+        if controlnet_union is None:
+            print("❌ controlnet_union not loaded properly")
+        else:
+            print("✅ controlnet_union loaded successfully")
 
+        print("Loading controlnet...")
+        controlnet = FluxMultiControlNetModel([controlnet_union])
+        
+        if controlnet is None:
+            print("❌ controlnet not loaded properly")
+        else:
+            print("✅ controlnet loaded successfully")
+
+        print("Loading inpainting pipeline...")
         inpainting_pipeline = FluxControlNetPipeline.from_pretrained(
             BASE_MODEL,
             controlnet=controlnet,
             torch_dtype=torch.float16,
             low_cpu_mem_usage=True
         )
-
-        print("inpaint properties: " + dir(inpainting_pipeline))
+        
+        if inpainting_pipeline is None:
+            print("❌ inpainting_pipeline not loaded properly")
+        else:
+            print("✅ inpainting_pipeline loaded successfully")
 
         inpainting_pipeline.vae.to("cuda")
         inpainting_pipeline.text_encoder.to("cuda")
