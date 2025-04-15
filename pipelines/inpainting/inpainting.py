@@ -1,22 +1,54 @@
 import gc, torch, traceback
 from configs.model_paths import MODEL_PATHS
-from diffusers import (
-    FluxPipeline, UniPCMultistepScheduler
-)
 from diffusers.hooks import apply_group_offloading
+from transformers import BitsAndBytesConfig as BitsAndBytesConfig, T5EncoderModel
+from diffusers import (
+    FluxControlNetPipeline,
+    FluxMultiControlNetModel,
+    FluxControlNetModel,
+    UniPCMultistepScheduler,
+    StableDiffusionInpaintPipeline,
+    FluxTransformer2DModel,
+    BitsAndBytesConfig as DiffusersBitsAndBytesConfig
+)
 
-def load__pipeline():
+def load_flux_pipeline():
     try:
         gc.collect()
         torch.cuda.empty_cache()
         torch.backends.cuda.matmul.allow_tf32 = True
 
-        pipe = FluxPipeline.from_pretrained(
-            MODEL_PATHS["base_model"],
-            torch_dtype=torch.bfloat16,
-            low_cpu_mem_usage=True
-        ).to("cuda")
+        quant_config = BitsAndBytesConfig(load_in_8bit=True)
+        text_encoder_8bit = T5EncoderModel.from_pretrained(
+            "black-forest-labs/FLUX.1-dev",
+            subfolder="text_encoder_2",
+            quantization_config=quant_config,
+            torch_dtype=torch.float16,
+        )
 
+        quant_config = DiffusersBitsAndBytesConfig(load_in_8bit=True)
+        transformer_8bit = FluxTransformer2DModel.from_pretrained(
+            "black-forest-labs/FLUX.1-dev",
+            subfolder="transformer",
+            quantization_config=quant_config,
+            torch_dtype=torch.float16,
+        )
+
+        controlnet_union = FluxControlNetModel.from_pretrained(
+            MODEL_PATHS["controlnet_union"],
+            torch_dtype=torch.float16,
+        )
+
+        controlnet = FluxMultiControlNetModel([controlnet_union])
+        
+        pipe = FluxControlNetPipeline.from_pretrained(
+            MODEL_PATHS["base_model"],
+            text_encoder_2=text_encoder_8bit,
+            transformer=transformer_8bit,
+            torch_dtype=torch.float16,
+            device_map="balanced",
+        ).to("cuda")
+        
         if pipe is None:
             print("❌ Pipeline not loaded properly")
             return None
@@ -36,8 +68,11 @@ def load__pipeline():
         apply_group_offloading(pipe.text_encoder_2, offload_type="leaf_level", offload_device=torch.device("cpu"), onload_device=torch.device("cuda"), use_stream=True)
         apply_group_offloading(pipe.vae, offload_type="leaf_level", offload_device=torch.device("cpu"), onload_device=torch.device("cuda"), use_stream=True)
 
+        pipe.enable_sequential_cpu_offload()
         pipe.vae.enable_slicing()
         pipe.vae.enable_tiling()
+
+        pipe.to(torch.float16)
 
         print("✅ Loaded FLUX.1-dev with full optimization")
         return pipe
