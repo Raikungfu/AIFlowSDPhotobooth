@@ -61,18 +61,8 @@ def inpaint_without_controlnet(
             mask = expand_mask(mask, kernel_size=30, iterations=5)
         elif mode == InpaintMode.KEEP_STRUCTURE:
             mask = Image.new("L", image.size, 255)
-
-        if mask is not None and control_images is None:
-            control_images = [make_inpaint_condition(image, mask)]
             
         generator = [torch.Generator("cpu").manual_seed(random.randint(0, 2**32 - 1)) for _ in range(number)]
-
-        if height == None or width == None:
-            height = (image.height // 8) * 8
-            width = (image.width // 8) * 8
-        else:
-            height = (height // 8) * 8
-            width = (width // 8) * 8
             
         pipeline_args = {
             "prompt": prompt,

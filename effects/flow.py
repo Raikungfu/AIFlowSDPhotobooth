@@ -29,11 +29,11 @@ def process_image(
         inpainted_images = []        
 
         if height == None or width == None:
-            height = (image.height // 8) * 8
-            width = (image.width // 8) * 8
+            height = (image.height // 16) * 16
+            width = (image.width // 16) * 16
         else:
-            height = (height // 8) * 8
-            width = (width // 8) * 8
+            height = (height // 16) * 16
+            width = (width // 16) * 16
 
         if photo_style == "ID Photo":
             print("📸 Style: ID Photo → inpaint WITHOUT ControlNet")
