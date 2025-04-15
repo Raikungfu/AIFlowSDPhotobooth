@@ -21,18 +21,11 @@ def load_inpainting_pipeline():
         def dummy_checker(images, **kwargs):
             return images, [False] * len(images)
 
-        controlnet_union = FluxControlNetModel.from_pretrained(
-            CONTROLNET_UNION, 
-            torch_dtype=torch.float16
-        ).to("cuda")
-
+        controlnet_union = FluxControlNetModel.from_pretrained(CONTROLNET_UNION, torch_dtype=torch.bfloat16)
         controlnet = FluxMultiControlNetModel([controlnet_union])
 
-        inpainting_pipeline = FluxControlNetPipeline.from_pretrained(
-            BASE_MODEL,
-            controlnet=controlnet,
-            torch_dtype=torch.float16
-        ).to("cuda")
+        inpainting_pipeline = FluxControlNetPipeline.from_pretrained(BASE_MODEL, controlnet=controlnet, torch_dtype=torch.bfloat16)
+        inpainting_pipeline.to("cuda")
 
         # inpainting_pipeline.load_lora_weights(LORA_PORTRAIT)
 
