@@ -93,6 +93,14 @@ def inpaint_without_controlnet(
             mask = expand_mask(mask, kernel_size=30, iterations=5)
         elif mode == InpaintMode.KEEP_STRUCTURE:
             mask = Image.new("L", image.size, 255)
+
+        
+        suit_url = "https://firebasestorage.googleapis.com/v0/b/social-networking-8c187.appspot.com/o/%E2%80%94Pngtree%E2%80%94mens%20black%20suit%20with%20white_8991014.png?alt=media&token=3f4aa208-1f5d-4b8f-80c2-d69da7905dc3"
+        final_images = []
+
+        image = image.convert("RGBA")
+        suit = load_overlay_image(suit_url, image.size)
+        image = apply_overlay_to_image(image, suit)
             
         generator = [torch.Generator("cpu").manual_seed(random.randint(0, 2**32 - 1)) for _ in range(number)]
             
@@ -105,7 +113,7 @@ def inpaint_without_controlnet(
             "num_inference_steps": num_inference_steps,
             "height": height,
             "width": width,
-            "num_images_per_prompt": number // 6,
+            "num_images_per_prompt": number,
             "generator": generator
         }
 
@@ -122,15 +130,6 @@ def inpaint_without_controlnet(
 
             if results is None:
                 raise ValueError("Error: 'inpainting_pipeline()' return null!")
-            
-        suit_url = "https://firebasestorage.googleapis.com/v0/b/social-networking-8c187.appspot.com/o/%E2%80%94Pngtree%E2%80%94mens%20black%20suit%20with%20white_8991014.png?alt=media&token=3f4aa208-1f5d-4b8f-80c2-d69da7905dc3"
-        final_images = []
-
-        for result in results:
-            result = result.convert("RGBA")
-            suit = load_overlay_image(suit_url, result.size)
-            combined = apply_overlay_to_image(result, suit)
-            final_images.append(combined)
 
         return results
     except Exception as e:

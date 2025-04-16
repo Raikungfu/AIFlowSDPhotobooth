@@ -54,7 +54,8 @@ def process_image(
             )
         else:
             print("🎨 Style: Other → inpaint WITH ControlNet")
-            control_images = create_controlnet_images(controlnets, optimized_image)
+            controlnet_models = [cn["type"] for cn in controlnets]
+            control_images = create_controlnet_images(controlnet_models, optimized_image)
             image_with_bg, image_mask = remove_bg_and_place_on_white(optimized_image, background_remover)
             mask, face_image, mask_clothes, mask_combined = generate_masks(mode, optimized_image, image_mask)
             inpainted_images = inpaint_with_ip_sd_controlnet(
@@ -70,7 +71,7 @@ def process_image(
                 height=height,
                 width=width,
                 control_images=control_images if control_images else None,
-                controlnets=controlnets,
+                controlnets=controlnet_models,
                 mode=mode,
             )
         

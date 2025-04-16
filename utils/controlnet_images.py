@@ -35,19 +35,18 @@ def create_controlnet_images(controlnets, image):
         return []
 
     for controlnet in controlnets:
-        control_type = controlnet["type"]
         
-        if control_type == "depth":
+        if controlnet == "depth":
             controlnet_images.append(create_depth_image(image))
-        elif control_type == "pose":
+        elif controlnet == "pose":
             controlnet_images.append(create_pose_image(image))
-        elif control_type == "canny":
+        elif controlnet == "canny":
             controlnet_images.append(create_canny_image(image))
-        elif control_type == "softedge":
+        elif controlnet == "softedge":
             controlnet_images.append(create_soft_edge_image(image))
-        elif control_type == "scribble":
+        elif controlnet == "scribble":
             controlnet_images.append(create_scribble_image(image))
         else:
-            raise ValueError(f"Unknown controlnet: {control_type}")
+            raise ValueError(f"Unknown controlnet: {controlnet}")
     
     return controlnet_images
