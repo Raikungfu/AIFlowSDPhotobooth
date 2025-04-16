@@ -34,7 +34,7 @@ def process_image(
             height = closestNumber(height, 16)
             width = closestNumber(width, 16)
 
-        if photo_style == "ID Photo":
+        if photo_style.lower() == "id photo":
             print("📸 Style: ID Photo → inpaint WITHOUT ControlNet")
             image_with_bg, image_mask = remove_bg_and_place_on_white(optimized_image, background_remover)
             mask, face_image, mask_clothes, mask_combined = generate_masks(mode, optimized_image, image_mask)
