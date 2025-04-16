@@ -27,5 +27,6 @@ def parse_controlnets(raw: str):
         net_type = match.group(1)
         weight = float(match.group(2)) if match.group(2) else 1.0
         controlnets.append({"type": net_type.strip(), "weight": weight})
-    
+        
+    controlnets.sort(key=lambda x: x["type"]) 
     return controlnets

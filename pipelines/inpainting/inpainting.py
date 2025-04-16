@@ -68,7 +68,6 @@ def load_inpainting_pipeline():
 
         pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
 
-
         pipeline.enable_attention_slicing()
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.safety_checker = dummy_checker

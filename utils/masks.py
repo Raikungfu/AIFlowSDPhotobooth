@@ -3,6 +3,8 @@ import cv2
 from PIL import Image
 from models.face_detection import face_detector, landmark_predictor
 import traceback
+import requests
+from io import BytesIO
 
 
 def generate_face_lower_mask(image, image_mask):
@@ -23,13 +25,12 @@ def generate_face_lower_mask(image, image_mask):
 
         if len(faces) == 0:
             print("No face detected.")
-            return None, None, None
+            return None, None, None, None
 
         face = faces[0]
         landmarks = landmark_predictor(gray, face)
         upper_lip_y = landmarks.part(51).y
         jaw_points = np.array([[landmarks.part(i).x, landmarks.part(i).y] for i in range(0, 17)])
-
 
         x, y, w, h = face.left(), face.top(), face.width(), face.height()
         face_crop = image_np[y:y+h, x:x+w]
@@ -88,3 +89,16 @@ def expand_mask(mask, kernel_size=15, iterations=2, threshold=128):
 
     _, mask_binary = cv2.threshold(mask_expanded, threshold, 255, cv2.THRESH_BINARY)
     return Image.fromarray(mask_expanded)
+
+
+
+def load_overlay_image(url, target_size):
+    response = requests.get(url)
+    overlay = Image.open(BytesIO(response.content)).convert("RGBA")
+    return overlay.resize(target_size, Image.ANTIALIAS)
+
+
+def apply_overlay_to_image(base_image, overlay_image):
+    if base_image.mode != "RGBA":
+        base_image = base_image.convert("RGBA")
+    return Image.alpha_composite(base_image, overlay_image)

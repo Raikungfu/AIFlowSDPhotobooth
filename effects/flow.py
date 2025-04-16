@@ -37,7 +37,7 @@ def process_image(
         if photo_style == "ID Photo":
             print("📸 Style: ID Photo → inpaint WITHOUT ControlNet")
             image_with_bg, image_mask = remove_bg_and_place_on_white(optimized_image, background_remover)
-            mask, face_image, mask_combined = generate_masks(mode, optimized_image, image_mask)
+            mask, face_image, mask_clothes, mask_combined = generate_masks(mode, optimized_image, image_mask)
             inpainted_images = inpaint_without_controlnet(
                 number=numImages,
                 image=image_with_bg,
@@ -56,7 +56,7 @@ def process_image(
             print("🎨 Style: Other → inpaint WITH ControlNet")
             control_images = create_controlnet_images(controlnets, optimized_image)
             image_with_bg, image_mask = remove_bg_and_place_on_white(optimized_image, background_remover)
-            mask, face_image, mask_combined = generate_masks(mode, optimized_image, image_mask)
+            mask, face_image, mask_clothes, mask_combined = generate_masks(mode, optimized_image, image_mask)
             inpainted_images = inpaint_with_ip_sd_controlnet(
                 number=numImages,
                 image=image_with_bg,
@@ -70,6 +70,8 @@ def process_image(
                 height=height,
                 width=width,
                 control_images=control_images if control_images else None,
+                controlnets=controlnets,
+                mode=mode,
             )
         
         return inpainted_images

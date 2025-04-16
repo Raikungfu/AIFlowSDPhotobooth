@@ -2,13 +2,13 @@ import traceback
 import torch
 import random
 from configs.enums.inpaint_mode import InpaintMode
-from utils.masks import expand_mask
+from utils.masks import apply_overlay_to_image, expand_mask, load_overlay_image
 from PIL import Image
 from pipelines.inpainting import pipeline_instance
 
 
 def inpaint_with_ip_sd_controlnet(
-    number, image, mask, face_image, prompt, negative_prompt, strength, guidance_scale,control_images, num_inference_steps, height, width,mode=InpaintMode.KEEP_FACE
+    number, image, mask, face_image, prompt, negative_prompt, strength, guidance_scale,control_images, controlnets, num_inference_steps, height, width,mode=InpaintMode.KEEP_FACE
 ):
     try:
         image = image.convert("RGB")
@@ -45,10 +45,15 @@ def inpaint_with_ip_sd_controlnet(
             pipeline_args["mask_image"] = mask
         
         if face_image is not None:
-            pipeline_args["reference_image"] = face_image if mode == InpaintMode.KEEP_FACE else None
+            pipeline_args["reference_image"] = face_image
 
         with torch.inference_mode():
-            results = pipeline_instance.controlnet_pipeline(**pipeline_args).images
+            if controlnets == ["canny", "openpose"]:
+                results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
+            elif controlnets == ["depth", "openpose"]:
+                results = pipeline_instance.controlnet_depth_pose_pipeline(**pipeline_args).images
+            elif controlnets == ["canny", "depth"]:
+                results = pipeline_instance.controlnet_canny_depth_pipeline(**pipeline_args).images
 
             if results is None:
                 raise ValueError("Error: 'inpainting_pipeline()' return null!")
@@ -89,7 +94,7 @@ def inpaint_without_controlnet(
             "num_inference_steps": num_inference_steps,
             "height": height,
             "width": width,
-            "num_images_per_prompt": number,
+            "num_images_per_prompt": number // 6,
             "generator": generator
         }
 
@@ -104,6 +109,15 @@ def inpaint_without_controlnet(
 
             if results is None:
                 raise ValueError("Error: 'inpainting_pipeline()' return null!")
+            
+        suit_url = "https://firebasestorage.googleapis.com/v0/b/social-networking-8c187.appspot.com/o/%E2%80%94Pngtree%E2%80%94mens%20black%20suit%20with%20white_8991014.png?alt=media&token=3f4aa208-1f5d-4b8f-80c2-d69da7905dc3"
+        final_images = []
+
+        for result in results:
+            result = result.convert("RGBA")
+            suit = load_overlay_image(suit_url, result.size)
+            combined = apply_overlay_to_image(result, suit)
+            final_images.append(combined)
 
         return results
     except Exception as e:

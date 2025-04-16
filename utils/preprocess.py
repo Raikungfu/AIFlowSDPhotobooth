@@ -47,8 +47,8 @@ def remove_bg_and_place_on_white(optimized_image, background_remover):
 
 
 def generate_masks(mode, optimized_image, image_mask):
-    mask = mask_combined = face_image = None
-
+    mask = mask_combined = mask_clothes = face_image = None
+    
     if mode == InpaintMode.KEEP_STRUCTURE:
         mask = optimized_image.convert("L")
 
@@ -57,7 +57,7 @@ def generate_masks(mode, optimized_image, image_mask):
         if not all([mask_face, mask_clothes, mask_combined]):
             raise ValueError("Failed to generate face or clothes mask")
 
-    return mask, face_image, mask_combined
+    return mask, face_image, mask_clothes, mask_combined
 
 
 def closestNumber(x, y):
