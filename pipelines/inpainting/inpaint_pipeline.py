@@ -53,7 +53,7 @@ def inpaint_with_ip_sd_controlnet(
             try:    
                 if controlnets == ["canny", "pose"]:
                     results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
-                if controlnets in [["pose", "softedge"], ["pose", "scribble"]]:
+                elif controlnets in [["pose", "softedge"], ["pose", "scribble"]]:
                     pipeline_args["control_image"] = control_images.reverse()
                     results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
                 elif controlnets == ["depth", "pose"]:
@@ -93,10 +93,8 @@ def inpaint_without_controlnet(
             mask = expand_mask(mask, kernel_size=30, iterations=5)
         elif mode == InpaintMode.KEEP_STRUCTURE:
             mask = Image.new("L", image.size, 255)
-
         
         suit_url = "https://firebasestorage.googleapis.com/v0/b/social-networking-8c187.appspot.com/o/%E2%80%94Pngtree%E2%80%94mens%20black%20suit%20with%20white_8991014.png?alt=media&token=3f4aa208-1f5d-4b8f-80c2-d69da7905dc3"
-        final_images = []
 
         image = image.convert("RGBA")
         suit = load_overlay_image(suit_url, image.size)

@@ -91,7 +91,6 @@ def expand_mask(mask, kernel_size=15, iterations=2, threshold=128):
     return Image.fromarray(mask_expanded)
 
 
-
 def load_overlay_image(url, target_size):
     response = requests.get(url)
     overlay = Image.open(BytesIO(response.content)).convert("RGBA")

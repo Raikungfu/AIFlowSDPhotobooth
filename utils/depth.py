@@ -3,33 +3,28 @@ import numpy as np
 import cv2
 from PIL import Image
 
-midas_model = None
-midas_transform = None
+from pipelines.inpainting import pipeline_instance
+
 
 def load_midas_model(model_type="DPT_Large", device="cuda" if torch.cuda.is_available() else "cpu"):
-    global midas_model, midas_transform
+    print(f"🔄 Loading MiDaS model ({model_type}) on {device}...")
+    midas_model = torch.hub.load("intel-isl/MiDaS", model_type).to(device)
+    midas_model.eval()
 
-    if midas_model is None:
-        print(f"🔄 Loading MiDaS model ({model_type}) on {device}...")
-        midas_model = torch.hub.load("intel-isl/MiDaS", model_type).to(device)
-        midas_model.eval()
-
-        midas_transforms = torch.hub.load("intel-isl/MiDaS", "transforms")
-        midas_transform = midas_transforms.dpt_transform if "DPT" in model_type else midas_transforms.small_transform
-        print("✅ MiDaS model loaded.")
+    midas_transforms = torch.hub.load("intel-isl/MiDaS", "transforms")
+    midas_transform = midas_transforms.dpt_transform if "DPT" in model_type else midas_transforms.small_transform
+    print("✅ MiDaS model loaded.")
 
     return midas_model, midas_transform, device
 
-def depth_image(image, model_type="DPT_Large"):
+def depth_image(image):
     if not isinstance(image, np.ndarray):
         image = np.array(image)
 
-    model, transform, device = load_midas_model(model_type)
-
-    input_tensor = transform(image).to(device)
+    input_tensor = pipeline_instance.midas_transform(image).to(pipeline_instance.device)
 
     with torch.inference_mode():
-        prediction = model(input_tensor)
+        prediction = pipeline_instance.midas_model(input_tensor)
         prediction = torch.nn.functional.interpolate(
             prediction.unsqueeze(1),
             size=image.shape[:2],
