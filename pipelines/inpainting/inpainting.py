@@ -52,10 +52,11 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
 
 def load_inpainting_pipeline():
     try:
-        pipeline = StableDiffusionInpaintPipeline.from_pretrained(
+        pipeline = StableDiffusionControlNetInpaintPipeline.from_pretrained(
             MODEL_PATHS["inpainting_model"],
             torch_dtype=torch.float16,
-            low_cpu_mem_usage=True
+            low_cpu_mem_usage=True,
+            controlnet=[controlnet_openpose]
         ).to("cuda")
 
         if pipeline is None:

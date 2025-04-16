@@ -2,6 +2,7 @@ import traceback
 import torch
 import random
 from configs.enums.inpaint_mode import InpaintMode
+from utils.controlnet_images import create_controlnet_images
 from utils.masks import apply_overlay_to_image, expand_mask, load_overlay_image
 from PIL import Image
 from pipelines.inpainting import pipeline_instance
@@ -94,11 +95,12 @@ def inpaint_without_controlnet(
         elif mode == InpaintMode.KEEP_STRUCTURE:
             mask = Image.new("L", image.size, 255)
         
-        suit_url = "https://firebasestorage.googleapis.com/v0/b/social-networking-8c187.appspot.com/o/%E2%80%94Pngtree%E2%80%94mens%20black%20suit%20with%20white_8991014.png?alt=media&token=3f4aa208-1f5d-4b8f-80c2-d69da7905dc3"
+        # suit_url = "https://firebasestorage.googleapis.com/v0/b/social-networking-8c187.appspot.com/o/%E2%80%94Pngtree%E2%80%94mens%20black%20suit%20with%20white_8991014.png?alt=media&token=3f4aa208-1f5d-4b8f-80c2-d69da7905dc3"
 
-        image = image.convert("RGBA")
-        suit = load_overlay_image(suit_url, image.size)
-        image = apply_overlay_to_image(image, suit)
+        # image = image.convert("RGBA")
+        # suit = load_overlay_image(suit_url, image.size)
+        # image = apply_overlay_to_image(image, suit)
+        # image = image.convert("RGB")
             
         generator = [torch.Generator("cpu").manual_seed(random.randint(0, 2**32 - 1)) for _ in range(number)]
             
@@ -112,7 +114,8 @@ def inpaint_without_controlnet(
             "height": height,
             "width": width,
             "num_images_per_prompt": number,
-            "generator": generator
+            "generator": generator,
+            "control_image": create_controlnet_images(controlnet=["pose"], image=image),
         }
 
         if mask is not None:

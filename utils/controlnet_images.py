@@ -24,10 +24,8 @@ def create_canny_image(image):
 def create_soft_edge_image(image):
     return process_image(image, softedge_image)
 
-
 def create_scribble_image(image):
     return process_image(image, scribble_image)
-
 
 def create_controlnet_images(controlnets, image):
     controlnet_images = []
