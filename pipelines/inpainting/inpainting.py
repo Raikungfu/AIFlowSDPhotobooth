@@ -13,7 +13,7 @@ def dummy_checker(images, **kwargs):
 def load_inpainting_controlnet_pipeline(controlnets=None):
     try:
         controlnet_map = {
-            "openpose": controlnet_openpose,
+            "pose": controlnet_openpose,
             "canny": controlnet_canny,
             "depth": controlnet_depth
         }

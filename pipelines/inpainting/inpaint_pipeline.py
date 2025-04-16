@@ -47,13 +47,24 @@ def inpaint_with_ip_sd_controlnet(
         if face_image is not None:
             pipeline_args["reference_image"] = face_image
 
+        results = None
+
         with torch.inference_mode():
-            if controlnets == ["canny", "openpose"]:
-                results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
-            elif controlnets == ["depth", "openpose"]:
-                results = pipeline_instance.controlnet_depth_pose_pipeline(**pipeline_args).images
-            elif controlnets == ["canny", "depth"]:
-                results = pipeline_instance.controlnet_canny_depth_pipeline(**pipeline_args).images
+            try:    
+                if controlnets == ["canny", "pose"]:
+                    results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
+                if controlnets in [["pose", "softedge"], ["pose", "scribble"]]:
+                    pipeline_args["control_image"] = control_images.reverse()
+                    results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
+                elif controlnets == ["depth", "pose"]:
+                    results = pipeline_instance.controlnet_depth_pose_pipeline(**pipeline_args).images
+                elif controlnets in [["canny", "depth"], ["depth", "softedge"], ["depth", "scribble"]]:
+                    results = pipeline_instance.controlnet_canny_depth_pipeline(**pipeline_args).images
+                else:
+                    raise ValueError(f"Unsupported controlnets combination: {controlnets}")
+            except Exception as e:
+                print(f"Error during inpainting with ControlNet: {e}")
+                raise e
 
             if results is None:
                 raise ValueError("Error: 'inpainting_pipeline()' return null!")
@@ -103,6 +114,8 @@ def inpaint_without_controlnet(
 
         if face_image is not None:
             pipeline_args["reference_image"] = face_image if mode == InpaintMode.KEEP_FACE else None
+
+        results = None
 
         with torch.inference_mode():
             results = pipeline_instance.inpainting_pipeline(**pipeline_args).images

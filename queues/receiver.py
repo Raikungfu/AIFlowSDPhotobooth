@@ -44,7 +44,7 @@ class RabbitMQReceiver:
             height = message.get("height", None)
             width = message.get("width", None)
             mode = message.get("mode", None)
-            numInferenceSteps = message.get("numInferenceSteps")
+            numInferenceSteps = message.get("numInferenceSteps", 30)
 
             if not image_url or not correlation_id or not photo_style:
                 raise ValueError("Invalid message format")

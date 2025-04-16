@@ -39,8 +39,8 @@ def start_worker():
 
 if __name__ == '__main__':
     try:
-        pipeline_instance.controlnet_canny_pose_pipeline = load_inpainting_controlnet_pipeline(controlnets=["canny", "openpose"])
-        pipeline_instance.controlnet_depth_pose_pipeline = load_inpainting_controlnet_pipeline(controlnets=[ "depth" , "openpose"])
+        pipeline_instance.controlnet_canny_pose_pipeline = load_inpainting_controlnet_pipeline(controlnets=["canny", "pose"])
+        pipeline_instance.controlnet_depth_pose_pipeline = load_inpainting_controlnet_pipeline(controlnets=[ "depth" , "pose"])
         pipeline_instance.controlnet_canny_depth_pipeline = load_inpainting_controlnet_pipeline(controlnets=["canny", "depth"])
         pipeline_instance.inpainting_pipeline = load_inpainting_pipeline()
         threading.Thread(target=start_worker, daemon=True).start()
