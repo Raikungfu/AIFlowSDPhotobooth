@@ -115,7 +115,7 @@ def inpaint_without_controlnet(
             "width": width,
             "num_images_per_prompt": number,
             "generator": generator,
-            "control_image": create_controlnet_images(controlnet=["pose"], image=image),
+            "control_image": create_controlnet_images(controlnets=["pose"], image=image),
         }
 
         if mask is not None:
