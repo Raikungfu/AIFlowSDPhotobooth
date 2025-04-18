@@ -79,7 +79,7 @@ def inpaint_without_controlnet(
     number, image, mask, mask_clothes, face_image, prompt, negative_prompt, strength, num_inference_steps, guidance_scale, height, width,mode=InpaintMode.KEEP_FACE
 ):
     try:
-        if mask is not None and isinstance(mask, Image.Image):
+        if isinstance(mask, Image.Image):
             mask = mask.convert("L")
 
         if mask is None:
@@ -97,8 +97,8 @@ def inpaint_without_controlnet(
             "prompt": "a formal outfit suitable for ID or passport photo, professional attire, elegant suit with collared shirt, neat tie, clean and well-fitted clothes, plain background, upper body portrait, no accessories, realistic lighting, front-facing",
             "negative_prompt": "messy clothes, t-shirt, casual wear, streetwear, hoodies, fantasy costume, anime, cartoon, deformed, extra arms, extra legs, bad hands, cropped, text, watermark, logo, blurry, low quality, open mouth, tilted head, shadows on face",
             "image": [image],
-            "strength": strength,
-            "guidance_scale": guidance_scale,
+            "strength": strength * 2,
+            "guidance_scale": guidance_scale * 2,
             "num_inference_steps": num_inference_steps,
             "height": height,
             "width": width,
