@@ -2,10 +2,10 @@ import traceback
 import torch
 import random
 from configs.enums.inpaint_mode import InpaintMode
-from utils.controlnet_images import create_controlnet_images
 from utils.masks import expand_mask
 from PIL import Image
 from pipelines.inpainting import pipeline_instance
+from configs.const.prompt_clothes import prompts
 
 
 def inpaint_with_ip_sd_controlnet(
@@ -92,10 +92,12 @@ def inpaint_without_controlnet(
             mask = Image.new("L", image.size, 255)
 
         generator = [torch.Generator("cpu").manual_seed(random.randint(0, 2**32 - 1)) for _ in range(number)]
+        
+        selected_prompt = random.choice(prompts)
 
-        pipeline_args = {
-            "prompt": "a formal outfit suitable for ID or passport photo, professional attire, elegant suit with collared shirt, neat tie, clean and well-fitted clothes, plain background, upper body portrait, no accessories, realistic lighting, front-facing",
-            "negative_prompt": "messy clothes, t-shirt, casual wear, streetwear, hoodies, fantasy costume, anime, cartoon, deformed, extra arms, extra legs, bad hands, cropped, text, watermark, logo, blurry, low quality, open mouth, tilted head, shadows on face",
+        pipeline_args = {        
+            "prompt": selected_prompt["prompt"],
+            "negative_prompt": selected_prompt["negative_prompt"],
             "image": [image],
             "strength": strength * 2,
             "guidance_scale": guidance_scale * 2,
