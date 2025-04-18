@@ -42,6 +42,7 @@ def process_image(
                 number=numImages,
                 image=image_with_bg,
                 mask=mask_combined or mask,
+                mask_clothes=mask_clothes,
                 face_image=face_image,
                 prompt=prompt,
                 negative_prompt=negative_prompt,

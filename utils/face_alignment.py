@@ -47,7 +47,6 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
         )
 
         face_h = rotated_face.height()
-        face_w = rotated_face.width()
         canvas_h = int(face_h / face_ratio)
         canvas_w = int(canvas_h * aspect_ratio[0] / aspect_ratio[1])
 
@@ -59,26 +58,7 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
 
         translation_matrix = np.float32([[1, 0, move_x], [0, 1, move_y]])
         translated_image = cv2.warpAffine(aligned_image, translation_matrix, (canvas_w, canvas_h), borderValue=(255, 255, 255))
-
-        chin = rotated_landmarks.part(8)
-        chin_x, chin_y = chin.x + move_x, chin.y + move_y
-
-        neck_width = int(face_w * 0.7)
-        neck_height = int(face_h * 0.7)
-
-        neck_top = chin_y
-        neck_bottom = chin_y + neck_height
-        neck_left = max(0, chin_x - neck_width // 2)
-        neck_right = min(translated_image.shape[1], chin_x + neck_width // 2)
-
-        head_part = translated_image[:neck_top, :, :]
-        neck_part = translated_image[neck_top:neck_bottom, neck_left:neck_right, :]
-
-        neck_part_resized = cv2.resize(neck_part, (head_part.shape[1], neck_part.shape[0]))
-
-        final_image = np.vstack([head_part, neck_part_resized])
-
-        return Image.fromarray(final_image).convert("RGB")
+        return Image.fromarray(translated_image).convert("RGB")
 
         # new_top = rotated_face.top() + move_y
         # new_height = rotated_face.height()
@@ -98,7 +78,7 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
 
         # base_image.paste(suit, (paste_x, paste_y), suit)
 
-        return base_image.convert("RGB")
+        # return base_image.convert("RGB")
     except Exception as e:
         import traceback
         traceback.print_exc()

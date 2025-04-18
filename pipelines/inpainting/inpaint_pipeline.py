@@ -76,7 +76,7 @@ def inpaint_with_ip_sd_controlnet(
     
 
 def inpaint_without_controlnet(
-    number, image, mask, face_image, prompt, negative_prompt, strength, num_inference_steps, guidance_scale, height, width,mode=InpaintMode.KEEP_FACE
+    number, image, mask, mask_clothes, face_image, prompt, negative_prompt, strength, num_inference_steps, guidance_scale, height, width,mode=InpaintMode.KEEP_FACE
 ):
     try:
         if mask is not None and isinstance(mask, Image.Image):
@@ -90,12 +90,12 @@ def inpaint_without_controlnet(
             mask = expand_mask(mask, kernel_size=30, iterations=5)
         elif mode == InpaintMode.KEEP_STRUCTURE:
             mask = Image.new("L", image.size, 255)
-            
+
         generator = [torch.Generator("cpu").manual_seed(random.randint(0, 2**32 - 1)) for _ in range(number)]
-            
+
         pipeline_args = {
-            "prompt": prompt,
-            "negative_prompt": negative_prompt,
+            "prompt": "a formal outfit suitable for ID or passport photo, professional attire, elegant suit with collared shirt, neat tie, clean and well-fitted clothes, plain background, upper body portrait, no accessories, realistic lighting, front-facing",
+            "negative_prompt": "messy clothes, t-shirt, casual wear, streetwear, hoodies, fantasy costume, anime, cartoon, deformed, extra arms, extra legs, bad hands, cropped, text, watermark, logo, blurry, low quality, open mouth, tilted head, shadows on face",
             "image": [image],
             "strength": strength,
             "guidance_scale": guidance_scale,
@@ -104,14 +104,32 @@ def inpaint_without_controlnet(
             "width": width,
             "num_images_per_prompt": number,
             "generator": generator,
-            "control_image": create_controlnet_images(controlnets=["pose"], image=image),
+        }
+
+        if mask_clothes is not None:
+            pipeline_args["mask_image"] = mask_clothes
+        
+        result_images = None
+
+        with torch.inference_mode():
+            result_images = pipeline_instance.inpainting_pipeline(**pipeline_args).images
+        
+        pipeline_args = {
+            "prompt": prompt,
+            "negative_prompt": negative_prompt,
+            "image": [result_images],
+            "strength": strength,
+            "guidance_scale": guidance_scale,
+            "num_inference_steps": num_inference_steps,
+            "height": height,
+            "width": width,
+            "num_images_per_prompt": 1,
+            "generator": generator,
+            "reference_image": face_image if mode == InpaintMode.KEEP_FACE else None
         }
 
         if mask is not None:
             pipeline_args["mask_image"] = mask
-
-        if face_image is not None:
-            pipeline_args["reference_image"] = face_image if mode == InpaintMode.KEEP_FACE else None
 
         results = None
 
