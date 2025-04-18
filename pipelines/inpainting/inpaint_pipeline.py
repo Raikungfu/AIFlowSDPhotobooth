@@ -95,7 +95,7 @@ def inpaint_without_controlnet(
         
         selected_prompt = random.choice(prompts)
 
-        pipeline_args = {        
+        pipeline_args = {
             "prompt": selected_prompt["prompt"],
             "negative_prompt": selected_prompt["negative_prompt"],
             "image": [image],
@@ -130,7 +130,7 @@ def inpaint_without_controlnet(
                 "width": width,
                 "num_images_per_prompt": 1,
                 "generator": [generator[i]],
-                "reference_image": face_image if mode == InpaintMode.KEEP_FACE else None,
+                "reference_image": face_image,
                 "mask_image": mask,
             }
 
