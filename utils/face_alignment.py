@@ -74,7 +74,7 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
 
         base_image.paste(suit, (paste_x, paste_y), suit)
 
-        return Image.fromarray(translated_image)
+        return base_image.convert("RGB")
 
     except Exception as e:
         import traceback

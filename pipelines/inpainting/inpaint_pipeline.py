@@ -12,8 +12,6 @@ def inpaint_with_ip_sd_controlnet(
     number, image, mask, face_image, prompt, negative_prompt, strength, guidance_scale,control_images, controlnets, num_inference_steps, height, width,mode=InpaintMode.KEEP_FACE
 ):
     try:
-        image = image.convert("RGB")
-
         if mask is not None and isinstance(mask, Image.Image):
             mask = mask.convert("L")
 
@@ -81,8 +79,6 @@ def inpaint_without_controlnet(
     number, image, mask, face_image, prompt, negative_prompt, strength, num_inference_steps, guidance_scale, height, width,mode=InpaintMode.KEEP_FACE
 ):
     try:
-        image = image.convert("RGB")
-
         if mask is not None and isinstance(mask, Image.Image):
             mask = mask.convert("L")
 
