@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 from PIL import Image
 from models.face_detection import face_detector, landmark_predictor
-from utils.masks import apply_overlay_to_image, load_overlay_image, load_overlay_image_width
+from utils.masks import load_overlay_image_width
 
 
 def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
@@ -70,12 +70,14 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
         paste_y = int(new_top + new_height)
         paste_x = 0
 
+        # crop_bottom = int(new_top + new_height)
+        # translated_image = translated_image[:crop_bottom, :, :]
+
         base_image = Image.fromarray(translated_image).convert("RGBA")
 
         base_image.paste(suit, (paste_x, paste_y), suit)
 
         return base_image.convert("RGB")
-
     except Exception as e:
         import traceback
         traceback.print_exc()

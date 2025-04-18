@@ -27,9 +27,9 @@ def make_inpaint_condition(image, image_mask=None):
 
 
 def align_and_optimize_image(image, should_align: bool = False):
-    image = optimize_image(image)
     if(should_align):
-        return align_face(image)
+        image = align_face(image)
+    image = optimize_image(image)
     return image
     
 

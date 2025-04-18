@@ -1,6 +1,3 @@
-from configs.enums.prompt_type import PromptType
-
-
 def generate_id_photo_prompt():
     base_prompt = (
         "Super Portrait, professional ID photo, studio lighting, sharp focus, neutral background, straight-on angle, natural skin texture, neutral expression, straight posture, ultra-high resolution."

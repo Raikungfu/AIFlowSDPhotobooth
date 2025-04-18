@@ -1,5 +1,6 @@
 import json
 import traceback
+from configs.enums.inpaint_mode import InpaintMode
 from effects.flow import process_image
 from queues.connection import RabbitMQConnection
 from queues.sender import RabbitMQSender
@@ -43,7 +44,8 @@ class RabbitMQReceiver:
             background_remover = message.get("backgroundRemover", False)
             height = message.get("height", None)
             width = message.get("width", None)
-            mode = message.get("mode", None)
+            mode_map = [InpaintMode.NONE, InpaintMode.KEEP_FACE, InpaintMode.KEEP_STRUCTURE]
+            mode = mode_map[message.get("mode", 0)]
             numInferenceSteps = message.get("numInferenceSteps", 30)
 
             if not image_url or not correlation_id or not photo_style:

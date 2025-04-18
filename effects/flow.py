@@ -20,7 +20,7 @@ def process_image(
     background_remover,
     height,
     width,
-    mode=InpaintMode.KEEP_STRUCTURE
+    mode
 ):
     try:
         optimized_image = align_and_optimize_image(image, "ID Photo" in photo_style)
