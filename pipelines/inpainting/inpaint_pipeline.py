@@ -113,31 +113,33 @@ def inpaint_without_controlnet(
 
         with torch.inference_mode():
             result_images = pipeline_instance.inpainting_pipeline(**pipeline_args).images
-        
-        pipeline_args = {
-            "prompt": prompt,
-            "negative_prompt": negative_prompt,
-            "image": [result_images],
-            "strength": strength,
-            "guidance_scale": guidance_scale,
-            "num_inference_steps": num_inference_steps,
-            "height": height,
-            "width": width,
-            "num_images_per_prompt": 1,
-            "generator": generator,
-            "reference_image": face_image if mode == InpaintMode.KEEP_FACE else None
-        }
 
-        if mask is not None:
-            pipeline_args["mask_image"] = mask
+        results = []
 
-        results = None
+        for i in range(number):
+            pipeline_args = {
+                "prompt": prompt,
+                "negative_prompt": negative_prompt,
+                "image": result_images[i],
+                "strength": strength,
+                "guidance_scale": guidance_scale,
+                "num_inference_steps": num_inference_steps,
+                "height": height,
+                "width": width,
+                "num_images_per_prompt": 1,
+                "generator": [generator[i]],
+                "reference_image": face_image if mode == InpaintMode.KEEP_FACE else None,
+                "mask_image": mask,
+            }
 
-        with torch.inference_mode():
-            results = pipeline_instance.inpainting_pipeline(**pipeline_args).images
+            if mask is not None:
+                pipeline_args["mask_image"] = mask
 
-            if results is None:
-                raise ValueError("Error: 'inpainting_pipeline()' return null!")
+            with torch.inference_mode():
+                results.append(pipeline_instance.inpainting_pipeline(**pipeline_args).images[0])
+
+        if results is None:
+            raise ValueError("Error: 'inpainting_pipeline()' return null!")
 
         return results
     except Exception as e:

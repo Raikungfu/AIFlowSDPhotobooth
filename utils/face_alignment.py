@@ -58,27 +58,24 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
 
         translation_matrix = np.float32([[1, 0, move_x], [0, 1, move_y]])
         translated_image = cv2.warpAffine(aligned_image, translation_matrix, (canvas_w, canvas_h), borderValue=(255, 255, 255))
-        return Image.fromarray(translated_image).convert("RGB")
 
-        # new_top = rotated_face.top() + move_y
-        # new_height = rotated_face.height()
+        crop_top = int(canvas_h * 2 / 5)
+        crop_bottom = int(canvas_h * 3 / 5)
+        crop = translated_image[crop_top:crop_bottom, :, :]
 
-        # suit_url = "https://firebasestorage.googleapis.com/v0/b/social-networking-8c187.appspot.com/o/%E2%80%94Pngtree%E2%80%94mens%20black%20suit%20with%20white_8991014.png?alt=media&token=3f4aa208-1f5d-4b8f-80c2-d69da7905dc3"
+        stretch_height = canvas_h - crop_bottom
+        stretched = cv2.resize(crop, (canvas_w, stretch_height), interpolation=cv2.INTER_LINEAR)
 
-        # image = image.convert("RGBA")
-        # suit = load_overlay_image_width(suit_url,  canvas_w)
+        mask = 255 * np.ones(stretched.shape, stretched.dtype)
 
-        # paste_y = int(new_top + new_height)
-        # paste_x = 0
+        center_y = crop_bottom + stretch_height // 2
+        center = (canvas_w // 2, center_y)
 
-        # crop_bottom = int(new_top + new_height)
-        # translated_image = translated_image[:crop_bottom, :, :]
+        blended = cv2.seamlessClone(
+            stretched, translated_image, mask, center, cv2.NORMAL_CLONE
+        )
 
-        # base_image = Image.fromarray(translated_image).convert("RGBA")
-
-        # base_image.paste(suit, (paste_x, paste_y), suit)
-
-        # return base_image.convert("RGB")
+        return Image.fromarray(blended).convert("RGB")
     except Exception as e:
         import traceback
         traceback.print_exc()
