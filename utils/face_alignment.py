@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 from PIL import Image
 from models.face_detection import face_detector, landmark_predictor
+from utils.masks import apply_overlay_to_image, load_overlay_image, load_overlay_image_width
 
 
 def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
@@ -16,7 +17,7 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
             return image
 
         face = min(faces, key=lambda f: abs(f.center().x - gray.shape[1] // 2))
-        x, y, w, h = (face.left(), face.top(), face.width(), face.height())
+        # x, y, w, h = (face.left(), face.top(), face.width(), face.height())
 
         landmarks = landmark_predictor(gray, face)
         left_eye = np.array([landmarks.part(36).x, landmarks.part(36).y])
@@ -48,7 +49,6 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
         face_h = rotated_face.height()
         canvas_h = int(face_h / face_ratio)
         canvas_w = int(canvas_h * aspect_ratio[0] / aspect_ratio[1])
-        canvas = np.ones((canvas_h, canvas_w, 3), dtype=np.uint8) * 255
 
         target_eye_x = canvas_w // 2
         target_eye_y = int((2 / 5) * canvas_h)
@@ -58,6 +58,21 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
 
         translation_matrix = np.float32([[1, 0, move_x], [0, 1, move_y]])
         translated_image = cv2.warpAffine(aligned_image, translation_matrix, (canvas_w, canvas_h), borderValue=(255, 255, 255))
+
+        new_top = rotated_face.top() + move_y
+        new_height = rotated_face.height()
+
+        suit_url = "https://firebasestorage.googleapis.com/v0/b/social-networking-8c187.appspot.com/o/%E2%80%94Pngtree%E2%80%94mens%20black%20suit%20with%20white_8991014.png?alt=media&token=3f4aa208-1f5d-4b8f-80c2-d69da7905dc3"
+
+        image = image.convert("RGBA")
+        suit = load_overlay_image_width(suit_url,  canvas_w)
+
+        paste_y = int(new_top + new_height)
+        paste_x = 0
+
+        base_image = Image.fromarray(translated_image).convert("RGBA")
+
+        base_image.paste(suit, (paste_x, paste_y), suit)
 
         return Image.fromarray(translated_image)
 

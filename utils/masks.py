@@ -96,6 +96,14 @@ def load_overlay_image(url, target_size):
     overlay = Image.open(BytesIO(response.content)).convert("RGBA")
     return overlay.resize(target_size, Image.Resampling.LANCZOS)
 
+def load_overlay_image_width(url, canvas_w):
+    response = requests.get(url)
+    overlay = Image.open(BytesIO(response.content)).convert("RGBA")
+    suit_cropped = overlay.crop((0, 1110, overlay.width, overlay.height))
+    scale_ratio = canvas_w / suit_cropped.width
+    new_suit_size = (canvas_w, int(suit_cropped.height * scale_ratio))
+    return suit_cropped.resize(new_suit_size, Image.LANCZOS)
+
 
 def apply_overlay_to_image(base_image, overlay_image):
     if base_image.mode != "RGBA":
