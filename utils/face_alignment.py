@@ -3,7 +3,6 @@ import numpy as np
 import cv2
 from PIL import Image
 from models.face_detection import face_detector, landmark_predictor
-from utils.masks import load_overlay_image_width
 
 
 def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
@@ -30,7 +29,8 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
 
         eye_center = tuple(map(int, ((left_eye + right_eye) / 2)))
         rotation_matrix = cv2.getRotationMatrix2D(eye_center, angle, 1.0)
-        aligned_image = cv2.warpAffine(image_np, rotation_matrix, (image_np.shape[1], image_np.shape[0]))
+        aligned_image = cv2.warpAffine(image_np, rotation_matrix, (image_np.shape[1], image_np.shape[0]), borderValue=(255, 255, 255))
+
 
         rotated_gray = cv2.cvtColor(aligned_image, cv2.COLOR_RGB2GRAY)
         rotated_faces = face_detector(rotated_gray)
@@ -59,25 +59,47 @@ def align_face(image, aspect_ratio=(4, 6), face_ratio=0.3):
         translation_matrix = np.float32([[1, 0, move_x], [0, 1, move_y]])
         translated_image = cv2.warpAffine(aligned_image, translation_matrix, (canvas_w, canvas_h), borderValue=(255, 255, 255))
 
-        crop_top = int(canvas_h * 2 / 5)
-        crop_bottom = int(canvas_h * 3 / 5)
-        crop = translated_image[crop_top:crop_bottom, :, :]
+        translated_image = fill_bottom_by_stretch(translated_image)
 
-        stretch_height = canvas_h - crop_bottom
-        stretched = cv2.resize(crop, (canvas_w, stretch_height), interpolation=cv2.INTER_LINEAR)
-
-        mask = 255 * np.ones(stretched.shape, stretched.dtype)
-
-        center_y = crop_bottom + stretch_height // 2
-        center = (canvas_w // 2, center_y)
-
-        blended = cv2.seamlessClone(
-            stretched, translated_image, mask, center, cv2.NORMAL_CLONE
-        )
-
-        return Image.fromarray(blended).convert("RGB")
+        return Image.fromarray(translated_image).convert("RGB")
     except Exception as e:
         import traceback
         traceback.print_exc()
         print(f"Error in face alignment: {e}")
         return image
+        
+
+def fill_bottom_by_stretch(image, stretch_height=100, segment_width=10):
+    h, w = image.shape[:2]
+
+    for start_x in range(0, w, segment_width):
+        end_x = min(start_x + segment_width, w)
+        
+        last_non_white_row = None
+        for y in range(h - 1, -1, -1):
+            row = image[y, start_x:end_x]
+            white_pixels = np.sum(row > 240)
+            total_pixels = len(row)
+            
+            if white_pixels < total_pixels * 0.02:
+                last_non_white_row = y
+                break
+        
+        if last_non_white_row is None:
+            continue
+
+        if last_non_white_row > 0:
+            prev_row = image[last_non_white_row - 1, start_x:end_x]
+            color_diff = np.sum(np.abs(prev_row - image[last_non_white_row, start_x:end_x]))
+            stretch_height = max(50, int(color_diff / 100)) + 20
+
+        stretch_start = last_non_white_row + 1
+        stretch_end = min(h, stretch_start + stretch_height)
+
+        for i in range(stretch_start, stretch_end):
+            image[i, start_x:end_x] = image[last_non_white_row, start_x:end_x]
+
+        if stretch_end < h:
+            image[stretch_end:, start_x:end_x] = image[last_non_white_row, start_x:end_x]
+
+    return image

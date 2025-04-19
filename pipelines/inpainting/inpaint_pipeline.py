@@ -116,7 +116,7 @@ def inpaint_without_controlnet(
         with torch.inference_mode():
             result_images = pipeline_instance.inpainting_pipeline(**pipeline_args).images
 
-        results = []
+        results = [image]
 
         for i in range(number):
             pipeline_args = {
@@ -129,7 +129,7 @@ def inpaint_without_controlnet(
                 "height": height,
                 "width": width,
                 "num_images_per_prompt": 1,
-                "generator": [generator[i]],
+                "generator": [torch.Generator("cpu").manual_seed(0)],
                 "reference_image": face_image,
                 "mask_image": mask,
             }

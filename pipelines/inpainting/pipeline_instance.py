@@ -6,3 +6,4 @@ midas_model = None
 midas_transform = None
 openpose_processor = None
 device = None
+u2net_session = None
