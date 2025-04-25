@@ -3,19 +3,21 @@ import numpy as np
 import cv2
 from PIL import Image
 
+from configs.model_paths import MODEL_PATHS
 from pipelines.inpainting import pipeline_instance
 
 
 def load_midas_model(model_type="DPT_Large", device="cuda" if torch.cuda.is_available() else "cpu"):
-    print(f"🔄 Loading MiDaS model ({model_type}) on {device}...")
-    midas_model = torch.hub.load("intel-isl/MiDaS", model_type).to(device)
+    print(f"Loading MiDaS model ({model_type}) on {device}...")
+    midas_model = torch.hub.load(MODEL_PATHS["midas"], model_type).to(device)
     midas_model.eval()
 
-    midas_transforms = torch.hub.load("intel-isl/MiDaS", "transforms")
+    midas_transforms = torch.hub.load(MODEL_PATHS["midas"], "transforms")
     midas_transform = midas_transforms.dpt_transform if "DPT" in model_type else midas_transforms.small_transform
-    print("✅ MiDaS model loaded.")
+    print("MiDaS model loaded.")
 
     return midas_model, midas_transform, device
+
 
 def depth_image(image):
     if not isinstance(image, np.ndarray):

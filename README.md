@@ -1,71 +1,96 @@
 # AIFlowSDPhotobooth
 
-AIFlowSDPhotobooth is an AI-powered image processing application that allows users to remove backgrounds, align faces, and apply inpainting techniques using Stable Diffusion models.
+📸 AIFlowSDPhotobooth is an AI Inference Server for generating high-quality ID photos and stylized images using Stable Diffusion 1.5 + Adapter + ControlNet (planned: FLUX.1-dev).
 
-## Features
-- Face alignment and background removal
-- Image processing with AI-based inpainting
-- Integration with Firebase for image storage
-- Web API built with Flask
-- Remote access via PageKite
+## 🌐 Features
+- Detects face and preprocesses ID photos.
+- Optimizes and aligns face position.
+- Removes background.
+- Generates masks, clothes, and session info.
+- Supports ControlNet modules: OpenPose, Scribble, Depth, Canny, Soft Edge.
+- Inpaints clothes or entire photo.
+- Uploads processed image and returns session info.
 
-## Requirements
-Ensure you have the following installed before running the application:
-- Python 3.8+
-- CUDA-compatible GPU with drivers installed
-- PyTorch with CUDA support
-- Required Python dependencies (see `requirements.txt`)
-
-## Installation
-Clone the repository and install dependencies:
-
-```sh
-$ git clone https://github.com/Raikungfu/AIFlowSDPhotobooth.git
-$ cd AIFlowSDPhotobooth
-$ pip install -r requirements.txt
-```
-
-## Usage
-### 1. Set Up Firebase
-- Add your Firebase credentials to `firebase/social-networking-8c187-firebase-adminsdk-cbnj3-5738be94d4.json`.
-- Update `firebaseConfig` in `app.py` with your Firebase storage bucket.
-
-### 2. Run the Application
-Start the Flask server:
-```sh
-$ python app.py
-```
-The API will run on `http://0.0.0.0:5000`.
-
-### 3. Expose Server via PageKite (Optional)
-If you need remote access, run:
-```sh
-$ python3 pagekite.py 5000 raiyugi.pagekite.me
-```
-
-## API Endpoints
-### Process Image
-**Endpoint:** `POST /process_image`
-
-**Request:**
-- `file`: Image file (PNG/JPG)
-- `options`: JSON object with processing options
-- `personal_info`: JSON object with additional parameters
-
-**Response:**
-```json
-{
-  "imageUrl": [
-    "url_of_processed_image_1",
-    "url_of_processed_image_2"
-  ]
+## 🧱 Model Structure
+```python
+MODEL_PATHS = {
+    "ip_adapter": "models/ip-adapter/ip-adapter-plus-face_sd15.pth",
+    "shape_predictor": "models/dlib/shape_predictor_68_face_landmarks.dat",
+    "base_model": "black-forest-labs/FLUX.1-dev",
+    "controlnet_union": "Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro",
+    "inpainting_model": "botp/stable-diffusion-v1-5-inpainting",
+    "controlnet_openpose": "lllyasviel/control_v11p_sd15_openpose",
+    "openpose_detection": "lllyasviel/ControlNet",
+    "controlnet_depth": "lllyasviel/control_v11f1p_sd15_depth",
+    "controlnet_canny": "lllyasviel/control_v11p_sd15_canny",
+    "midas": "intel-isl/MiDaS",
 }
-```
+📦 Installation
+Clone repository
 
-## Troubleshooting
-- If encountering CUDA errors, ensure your GPU drivers and PyTorch installation support CUDA.
-- Check Firebase configuration for authentication issues.
-- If Stable Diffusion models are missing, manually download them from Hugging Face.
+bash
+Copy
+Edit
+git clone https://github.com/Raikungfu/AIFlowSDPhotobooth.git
+cd AIFlowSDPhotobooth
+Download required models
+Install gdown for downloading models.
+
+bash
+Copy
+Edit
+pip install gdown
+Then, download the necessary models:
+
+bash
+Copy
+Edit
+# Dlib Shape Predictor
+gdown --id 1WdwqdrivpYtOxUVYKrR3hV9E_gYH0cu_ -O models/dlib/shape_predictor_68_face_landmarks.dat
+
+# IP-Adapter
+gdown --id 1SDvNYNrlEj1oqfuRq5ScOLK4rXC_43aq -O models/ip-adapter/ip-adapter-plus-face_sd15.pth
+Install dependencies
+
+bash
+Copy
+Edit
+pip install -r requirements.txt
+🚀 Run App
+To start the app:
+
+bash
+Copy
+Edit
+python app.py
+🧠 Flow Overview
+mermaid
+Copy
+Edit
+graph TD;
+    A[Receive message] --> B{ID Photo?}
+    B -->|Yes| C[Detect face]
+    C --> D{Valid?}
+    D -->|Yes| E[Rotate/Center face]
+    E --> F[Resize canvas proportionally]
+    F --> G[Stretch clothes to fill]
+    G --> H[Optimize image]
+    D -->|No| H
+    B -->|Others| H
+    H --> I[Background remover]
+    I --> J[Generate mask, clothes, sex, combine]
+    J --> K{Type}
+    K -->|ID Photo| L[Inpaint clothes]
+    L --> M[Inpaint All]
+    K -->|OpenPose| N[Create OpenPose image]
+    N --> O[Create Canny image]
+    K -->|Scribble| P[Create scribble image]
+    K -->|Depth| Q[Create Depth image]
+    K -->|Soft Edge| R[Create Soft Edge image]
+    O & P & Q & R --> S[Inpaint with ControlNets]
+    M --> T[Upload Image]
+    S --> T
+    T --> U[Send result: URL, metadata, session code]
 
 ## License
 This project is licensed under the MIT License.
