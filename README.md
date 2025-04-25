@@ -1,74 +1,179 @@
 # AIFlowSDPhotobooth
 
-AIFlowSDPhotobooth is an AI-powered image processing application that allows users to remove backgrounds, align faces, and apply inpainting techniques using Stable Diffusion models.
+📸 AIFlowSDPhotobooth is an AI Inference Server for generating high-quality ID photos and stylized images using Stable Diffusion 1.5 + Adapter + ControlNet (planned: FLUX.1-dev + controlnet union).
 
-## Features
-- Face alignment and background removal
-- Image processing with AI-based inpainting
-- Integration with Firebase for image storage
-- Web API built with Flask
-- Remote access via PageKite
+---
 
-## Requirements
-Ensure you have the following installed before running the application:
-- Python 3.8+
-- CUDA-compatible GPU with drivers installed
-- PyTorch with CUDA support
-- Required Python dependencies (see `requirements.txt`)
+## 🌐 Features
 
-## Installation
-Clone the repository and install dependencies:
+- Receive image via message queue.
+- Using StableDiffusionInpaintPipeline/StableDiffusionControlNetInpaintPipeline pipeline to modify photo.
+- Detects face and preprocesses ID photos.
+- Adjust size of photo match ratio 4\*6 for ID photos
+- Optimizes and aligns face position.
+- Removes background.
+- Generates masks.
+- Use ControlNet modules include OpenPose, Depth, Canny with Controlnet images are OpenPose, Scribble, Depth, Canny, Soft Edge for another photo style.
+- Inpaints with/without Controlnets.
+- Uploads processed image to Firebase Storage and returns list images processed to API server via queue.
 
-```sh
-$ git clone https://github.com/Raikungfu/AIFlowSDPhotobooth.git
-$ cd AIFlowSDPhotobooth
-$ pip install -r requirements.txt
+---
+
+## 🧱 Model Reference
+
+```
+models/ip-adapter/ip-adapter-plus-face_sd15.pth  # Source: [Tencent AI Lab - IP-Adapter](https://github.com/tencent-ailab/IP-Adapter)
+models/dlib/shape_predictor_68_face_landmarks.dat  # Source: [dlib.net](http://dlib.net/files/)
+botp/stable-diffusion-v1-5-inpainting  # Source: [RunwayML SD Inpainting](https://huggingface.co/runwayml/stable-diffusion-inpainting)
+lllyasviel/control_v11p_sd15_openpose  # Source: [lllyasviel/ControlNet](https://huggingface.co/lllyasviel/control_v11p_sd15_openpose)
+lllyasviel/ControlNet  # Source: [lllyasviel/ControlNet Base](https://huggingface.co/lllyasviel/ControlNet)
+lllyasviel/control_v11f1p_sd15_depth  # Source: [Depth ControlNet](https://huggingface.co/lllyasviel/control_v11f1p_sd15_depth)
+lllyasviel/control_v11p_sd15_canny  # Source: [Canny ControlNet](https://huggingface.co/lllyasviel/control_v11p_sd15_canny)
+intel-isl/MiDaS  # Source: [MiDaS Depth Estimation](https://github.com/isl-org/MiDaS)
 ```
 
-## Usage
-### 1. Set Up Firebase
-- Add your Firebase credentials to `firebase/social-networking-8c187-firebase-adminsdk-cbnj3-5738be94d4.json`.
-- Update `firebaseConfig` in `app.py` with your Firebase storage bucket.
+---
 
-### 2. Run the Application
-Start the Flask server:
-```sh
-$ python app.py
-```
-The API will run on `http://0.0.0.0:5000`.
+## 📆 Installation
 
-### 3. Expose Server via PageKite (Optional)
-If you need remote access, run:
-```sh
-$ python3 pagekite.py 5000 raiyugi.pagekite.me
+### 1. Clone repository
+
+```bash
+git clone https://github.com/Raikungfu/AIFlowSDPhotobooth.git
+cd AIFlowSDPhotobooth
 ```
 
-## API Endpoints
-### Process Image
-**Endpoint:** `POST /process_image`
+### 2. Download required models
 
-**Request:**
-- `file`: Image file (PNG/JPG)
-- `options`: JSON object with processing options
-- `personal_info`: JSON object with additional parameters
+Install `gdown`:
 
-**Response:**
-```json
-{
-  "imageUrl": [
-    "url_of_processed_image_1",
-    "url_of_processed_image_2"
-  ]
-}
+```bash
+pip install gdown
 ```
 
-## Troubleshooting
-- If encountering CUDA errors, ensure your GPU drivers and PyTorch installation support CUDA.
-- Check Firebase configuration for authentication issues.
-- If Stable Diffusion models are missing, manually download them from Hugging Face.
+Download models:
 
-## License
-This project is licensed under the MIT License.
+```bash
+# Dlib Shape Predictor (source: dlib.net)
+gdown --id 1WdwqdrivpYtOxUVYKrR3hV9E_gYH0cu_ -O models/dlib/shape_predictor_68_face_landmarks.dat
 
-## Author
-To Bich Phuong
+# IP-Adapter (source: Tencent AI Lab)
+gdown --id 1SDvNYNrlEj1oqfuRq5ScOLK4rXC_43aq -O models/ip-adapter/ip-adapter-plus-face_sd15.pth
+```
+
+### 📁 Directory Structure (for models)
+
+```
+models/
+├── dlib/
+│   └── shape_predictor_68_face_landmarks.dat
+├── ip-adapter/
+│   └── ip-adapter-plus-face_sd15.pth
+└── (others handled via Hugging Face auto-download or torch hub)
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 🚀 Run App Locally
+
+```bash
+python app.py
+```
+
+---
+
+## 🐳 Docker Build & Run
+
+Ensure Docker is installed.
+
+### 1. Build Docker Image
+
+```bash
+docker build -t sd-photobooth .
+```
+
+### 2. Run Container
+
+```bash
+docker run -p 7860:7860 sd-photobooth
+```
+
+> Ensure that model files are mounted into the container or pre-included in the Docker build context.
+
+---
+
+## 🧪 Run on Google Colab
+
+To run on Google Colab:
+
+1. Upload the project code or clone repo via `!git clone ...`
+2. Install dependencies:
+
+```python
+!pip install -r requirements.txt
+```
+
+3. Install additional system packages (if needed):
+
+```bash
+!apt update && apt install -y ffmpeg libgl1-mesa-glx
+```
+
+4. Download models using `gdown` (as above).
+5. Run the app using:
+
+```python
+!python app.py
+```
+
+---
+
+## 🧠 Flow Overview
+
+```
+Receive message(image url, photo style, correlation id) via message queue
+     ↓
+Check type: ID Photo?
+     ↓
+If Yes → Detect face → Validate?
+     ↓        ↘
+   Yes        No
+   ↓           ↓
+Rotate/Center  → Skip
+     ↓
+Resize Canvas
+     ↓
+Stretch Clothes
+     ↓
+Optimize Image
+     ↓
+Remove Background
+     ↓
+Generate mask
+     ↓
+Branch by Type:
+    - ID Photo → Inpaint clothes → Inpaint all
+    - OpenPose/Scribble/Depth/Canny → Generate control image → Inpaint
+     ↓
+Upload Final Image
+     ↓
+Send Result via message queue
+```
+
+---
+
+## 👨‍💻 Author
+
+**To Bich Phuong**
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.

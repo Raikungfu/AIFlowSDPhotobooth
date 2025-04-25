@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 from utils.firebase_utils import generate_random_filename, upload_to_firebase_storage
 from PIL import Image
 import requests
@@ -12,6 +13,13 @@ def download_image(image_url):
     except requests.RequestException as e:
         print(f"Error downloading image: {e}")
         return None
+    
+
+def parallel_upload_images(images, bucket, max_workers=6):
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(upload_image, img, bucket) for img in images]
+        results = [f.result() for f in futures]
+    return results
     
 
 def upload_image(image, bucket):
