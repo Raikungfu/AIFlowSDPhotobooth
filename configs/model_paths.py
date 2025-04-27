@@ -8,5 +8,5 @@ MODEL_PATHS = {
     "openpose_detection": "lllyasviel/ControlNet",
     "controlnet_depth": "lllyasviel/control_v11f1p_sd15_depth",
     "controlnet_canny": "lllyasviel/control_v11p_sd15_canny",
-    "midas": "intel-isl/MiDaS",
+    "zoe": "Intel/zoedepth-nyu-kitti",
 }

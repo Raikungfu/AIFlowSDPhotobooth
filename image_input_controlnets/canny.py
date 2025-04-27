@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 from PIL import Image
 
+from utils.inpaint_pipeline_utils.masks import ensure_uint8
+
 def canny_image(image):
     try:
         if isinstance(image, np.ndarray):
@@ -9,8 +11,7 @@ def canny_image(image):
 
         image = image.convert("RGB").convert("L")
         image_np = np.array(image)
-        if image_np.dtype != np.uint8:
-            image_np = image_np.astype(np.uint8)
+        image_np = ensure_uint8(image_np)
 
         canny_image = cv2.Canny(image_np, 100, 200)
         canny_rgb = cv2.cvtColor(canny_image, cv2.COLOR_GRAY2RGB)

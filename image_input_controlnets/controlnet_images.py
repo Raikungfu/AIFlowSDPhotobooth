@@ -33,7 +33,6 @@ def create_controlnet_images(controlnets, image):
         return []
 
     for controlnet in controlnets:
-        
         if controlnet == "depth":
             controlnet_images.append(create_depth_image(image))
         elif controlnet == "pose":

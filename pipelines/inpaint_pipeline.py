@@ -3,8 +3,8 @@ import torch
 import random
 from PIL import Image
 from configs.enums.inpaint_mode import InpaintMode
-from utils.masks import expand_mask
-from pipelines.inpainting import pipeline_instance
+from pipelines import pipeline_instance
+from utils.inpaint_pipeline_utils.masks import expand_mask
 from configs.const.prompt_clothes import prompts
 
 
@@ -53,7 +53,7 @@ def inpaint_with_ip_sd_controlnet(
         }
 
         if face_image is not None:
-            pipeline_args["reference_image"] = face_image
+            pipeline_args["reference_image"] = face_image if mode == InpaintMode.KEEP_FACE else None
 
         with torch.inference_mode():
             if controlnets == ["canny", "pose"]:

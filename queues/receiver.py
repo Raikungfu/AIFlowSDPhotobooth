@@ -1,11 +1,11 @@
 import json
 import traceback
-from DTO.requestDTO import extract_message_data, validate_message
+from utils.preprocess_input.process_request import extract_message_data, validate_message
 from effects.flow import process_image
 from queues.connection import RabbitMQConnection
 from queues.sender import RabbitMQSender
-from utils.firebase_utils import initialize_firebase
-from utils.image_upload import download_image, parallel_upload_images
+from utils.upload_image.firebase_utils import initialize_firebase
+from utils.upload_image.image_upload import download_image, parallel_upload_images
 from configs.const.config import cred_path, firebaseConfig
 from configs.const.style import REPLY_QUEUE
 

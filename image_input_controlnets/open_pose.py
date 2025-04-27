@@ -2,7 +2,7 @@ from PIL import Image
 import torch
 from configs.model_paths import MODEL_PATHS
 from controlnet_aux import OpenposeDetector
-from pipelines.inpainting import pipeline_instance
+from pipelines import pipeline_instance
 
 
 def load_openpose_processor():

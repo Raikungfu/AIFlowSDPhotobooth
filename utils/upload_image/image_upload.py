@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
-from utils.firebase_utils import generate_random_filename, upload_to_firebase_storage
+from utils.upload_image.firebase_utils import generate_random_filename, upload_to_firebase_storage
 from PIL import Image
 import requests
 import io

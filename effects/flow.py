@@ -1,10 +1,7 @@
 import traceback
-from PIL import Image
-from configs.enums.inpaint_mode import InpaintMode
-from pipelines.inpainting.inpaint_pipeline import inpaint_with_ip_sd_controlnet, inpaint_without_controlnet
-from utils.controlnet_images import create_controlnet_images
-from utils.preprocess import align_and_optimize_image, closestNumber, generate_masks, remove_bg_and_place_on_white
-from utils.process_input import get_flux_controlnet_mode
+from pipelines.inpaint_pipeline import inpaint_with_ip_sd_controlnet, inpaint_without_controlnet
+from image_input_controlnets.controlnet_images import create_controlnet_images
+from utils.inpaint_pipeline_utils.preprocess import align_and_optimize_image, closestNumber, generate_masks, remove_bg_and_place_on_white
 
 def process_image(
     image,
@@ -28,11 +25,11 @@ def process_image(
         inpainted_images = []
 
         if height == None or width == None:
-            height = closestNumber(optimized_image.height, 16)
-            width =  closestNumber(optimized_image.width, 16)
+            height = closestNumber(optimized_image.height, 8)
+            width =  closestNumber(optimized_image.width, 8)
         else:
-            height = closestNumber(height, 16)
-            width = closestNumber(width, 16)
+            height = closestNumber(height, 8)
+            width = closestNumber(width, 8)
             
         image_with_bg, image_mask = remove_bg_and_place_on_white(optimized_image, background_remover)
         mask, face_image, mask_clothes, mask_combined = generate_masks(mode, optimized_image, image_mask)

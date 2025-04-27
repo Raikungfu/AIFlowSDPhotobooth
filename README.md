@@ -29,7 +29,7 @@ lllyasviel/control_v11p_sd15_openpose  # Source: [lllyasviel/ControlNet](https:/
 lllyasviel/ControlNet  # Source: [lllyasviel/ControlNet Base](https://huggingface.co/lllyasviel/ControlNet)
 lllyasviel/control_v11f1p_sd15_depth  # Source: [Depth ControlNet](https://huggingface.co/lllyasviel/control_v11f1p_sd15_depth)
 lllyasviel/control_v11p_sd15_canny  # Source: [Canny ControlNet](https://huggingface.co/lllyasviel/control_v11p_sd15_canny)
-intel-isl/MiDaS  # Source: [MiDaS Depth Estimation](https://github.com/isl-org/MiDaS)
+Intel/zoedepth-nyu-kitti  # Source: [ZoeDepth](https://huggingface.co/docs/transformers/main/en/model_doc/zoedepth)
 ```
 
 ---
