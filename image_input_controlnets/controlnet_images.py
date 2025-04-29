@@ -1,11 +1,11 @@
 from PIL import Image
 import numpy as np
 
-from utils.canny import canny_image
-from utils.depth import depth_image
-from utils.open_pose import openpose_image
-from utils.scribble import scribble_image
-from utils.soft_edge import softedge_image
+from image_input_controlnets.canny import canny_image
+from image_input_controlnets.depth import depth_image
+from image_input_controlnets.open_pose import openpose_image
+from image_input_controlnets.scribble import scribble_image
+from image_input_controlnets.soft_edge import softedge_image
 
 
 def process_image(image, processing_function):
