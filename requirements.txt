@@ -24,3 +24,4 @@ controlnet-aux
 mediapipe
 accelerate
 bitsandbytes
+git+https://github.com/tencent-ailab/IP-Adapter.git

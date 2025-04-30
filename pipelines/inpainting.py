@@ -7,6 +7,9 @@ from diffusers import (
     DDIMScheduler
 )
 from models.controlnets import controlnet_openpose, controlnet_canny, controlnet_depth
+from ip_adapter import IPAdapterPlus
+from transformers import CLIPVisionModelWithProjection
+
 
 def dummy_checker(images, **kwargs):
     return images, [False] * len(images)
@@ -29,7 +32,13 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
         )
 
         pipeline.scheduler = DDIMScheduler.from_config(pipeline.scheduler.config)
-        pipeline.load_ip_adapter(MODEL_PATHS["ip_adapter"])
+        
+        pipeline.load_ip_adapter(
+            "h94/IP-Adapter", 
+            subfolder="models", 
+            weight_name="ip-adapter-plus-face_sd15.bin",
+            adapter_type=IPAdapterPlus
+        )
 
         pipeline.set_ip_adapter_scale(0.5)
 
