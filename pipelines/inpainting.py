@@ -36,7 +36,7 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
         # ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
         # pipeline.unet.load_state_dict(ip_adapter, strict=False)
 
-        pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
+        #pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
 
         pipeline.enable_attention_slicing()
         pipeline.enable_xformers_memory_efficient_attention()
@@ -65,9 +65,6 @@ def load_inpainting_pipeline():
             print("Inpainting_pipeline not loaded properly")
         else:
             print("Inpainting_pipeline loaded successfully")
-
-        # ip_adapter = torch.load(MODEL_PATHS["ip_adapter"])
-        # pipeline.unet.load_state_dict(ip_adapter, strict=False)
 
         pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
 
