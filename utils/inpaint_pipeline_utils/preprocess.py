@@ -4,8 +4,8 @@ from PIL import Image
 
 from configs.enums.inpaint_mode import InpaintMode
 from utils.face_utils.face_alignment import align_face
-from utils.image_utils import optimize_image
 from utils.image_utils.background_prcessing import place_on_new_background, remove_background
+from utils.image_utils.optimize_image import optimize_image
 from utils.inpaint_pipeline_utils.masks import generate_face_lower_mask
 
 
@@ -47,18 +47,14 @@ def remove_bg_and_place_on_white(optimized_image, background_remover):
     return image_with_bg, image_mask
 
 
-def generate_masks(mode, optimized_image, image_mask):
-    mask = mask_combined = mask_clothes = face_image = None
-    
-    if mode == InpaintMode.KEEP_STRUCTURE:
-        mask = optimized_image.convert("L")
+def generate_masks(mode, optimized_image, image_mask, get_list_face=False):
+    mask_combined = mask_clothes = None
 
-    elif mode == InpaintMode.KEEP_FACE:
-        mask_face, mask_clothes, mask_combined, face_image = generate_face_lower_mask(optimized_image, image_mask)
-        if not all([mask_face, mask_clothes, mask_combined]):
-            raise ValueError("Failed to generate face or clothes mask")
+    face_images = []
 
-    return mask, face_image, mask_clothes, mask_combined
+    mask_clothes, mask_combined, face_images = generate_face_lower_mask(optimized_image, image_mask, get_list_face)
+
+    return face_images, mask_clothes, mask_combined
 
 
 def closestNumber(x, y):

@@ -32,16 +32,16 @@ def process_image(
             width = closestNumber(width, 8)
             
         image_with_bg, image_mask = remove_bg_and_place_on_white(optimized_image, background_remover)
-        mask, face_image, mask_clothes, mask_combined = generate_masks(mode, optimized_image, image_mask)
 
         if photo_style.lower() == "id photo":
             print("Inpaint WITHOUT ControlNet")
+            face_images, mask_clothes, mask_combined = generate_masks(mode, optimized_image, image_mask)
             inpainted_images = inpaint_without_controlnet(
                 number=numImages,
                 image=image_with_bg,
-                mask=mask_combined or mask,
+                mask=mask_combined,
                 mask_clothes=mask_clothes,
-                face_image=face_image,
+                face_image=face_images[0],
                 prompt=prompt,
                 negative_prompt=negative_prompt,
                 strength=strength,
@@ -53,13 +53,14 @@ def process_image(
             )
         else:
             print("Inpaint WITH ControlNet")
+            face_images, mask_clothes, mask_combined = generate_masks(mode, optimized_image, image_mask, True)
             controlnet_models = [cn["type"] for cn in controlnets]
             control_images = create_controlnet_images(controlnet_models, optimized_image)
             inpainted_images = inpaint_with_ip_sd_controlnet(
                 number=numImages,
                 image=image_with_bg,
-                mask=mask,
-                face_image=face_image,
+                mask=None,
+                face_images=face_images,
                 prompt=prompt,
                 negative_prompt=negative_prompt,
                 strength=strength,

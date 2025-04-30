@@ -28,7 +28,7 @@ def get_generator_list(number):
 
 
 def inpaint_with_ip_sd_controlnet(
-    number, image, mask, face_image, prompt, negative_prompt,
+    number, image, mask, face_images, prompt, negative_prompt,
     strength, guidance_scale, control_images, controlnets,
     num_inference_steps, height, width,
     mode=InpaintMode.KEEP_FACE
@@ -50,10 +50,8 @@ def inpaint_with_ip_sd_controlnet(
             "generator": generator,
             "control_image": control_images,
             "mask_image": mask,
+            "ip_adapter_image": image,
         }
-
-        if face_image is not None:
-            pipeline_args["reference_image"] = face_image if mode == InpaintMode.KEEP_FACE else None
 
         with torch.inference_mode():
             if controlnets == ["canny", "pose"]:

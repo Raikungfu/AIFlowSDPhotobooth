@@ -3,7 +3,8 @@ from configs.model_paths import MODEL_PATHS
 from diffusers import (
     UniPCMultistepScheduler,
     StableDiffusionInpaintPipeline,
-    StableDiffusionControlNetInpaintPipeline
+    StableDiffusionControlNetInpaintPipeline,
+    DDIMScheduler
 )
 from models.controlnets import controlnet_openpose, controlnet_canny, controlnet_depth
 
@@ -27,10 +28,13 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
             controlnet=selected_controlnets
         )
 
-        pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
+        pipeline.scheduler = DDIMScheduler.from_config(pipeline.scheduler.config)
+        pipeline.load_ip_adapter(MODEL_PATHS["ip_adapter"])
 
-        ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
-        pipeline.unet.load_state_dict(ip_adapter, strict=False)
+        pipeline.set_ip_adapter_scale(0.5)
+
+        # ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
+        # pipeline.unet.load_state_dict(ip_adapter, strict=False)
 
         pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
 
@@ -62,8 +66,8 @@ def load_inpainting_pipeline():
         else:
             print("Inpainting_pipeline loaded successfully")
 
-        ip_adapter = torch.load(MODEL_PATHS["ip_adapter"])
-        pipeline.unet.load_state_dict(ip_adapter, strict=False)
+        # ip_adapter = torch.load(MODEL_PATHS["ip_adapter"])
+        # pipeline.unet.load_state_dict(ip_adapter, strict=False)
 
         pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
 
