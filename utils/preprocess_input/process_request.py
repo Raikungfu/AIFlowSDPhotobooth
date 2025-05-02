@@ -1,5 +1,5 @@
 from configs.enums.inpaint_mode import InpaintMode
-from utils.process_input import parse_controlnets
+from utils.preprocess_input.process_input import parse_controlnets
 
 
 def extract_message_data(message):
