@@ -4,11 +4,10 @@ from diffusers import (
     UniPCMultistepScheduler,
     StableDiffusionInpaintPipeline,
     StableDiffusionControlNetInpaintPipeline,
-    DDIMScheduler
+    EulerAncestralDiscreteScheduler
 )
 from models.controlnets import controlnet_openpose, controlnet_canny, controlnet_depth
 from ip_adapter import IPAdapterPlus
-from transformers import CLIPVisionModelWithProjection
 
 
 def dummy_checker(images, **kwargs):
@@ -31,7 +30,17 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
             controlnet=selected_controlnets
         )
 
-        pipeline.scheduler = DDIMScheduler.from_config(pipeline.scheduler.config)
+        # ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
+        # pipeline.unet.load_state_dict(ip_adapter, strict=False)
+
+        pipeline.scheduler = EulerAncestralDiscreteScheduler.from_config(pipeline.scheduler.config)
+
+        pipeline.enable_attention_slicing()
+        pipeline.enable_xformers_memory_efficient_attention()
+        pipeline.safety_checker = dummy_checker
+        
+        pipeline.enable_model_cpu_offload()
+        #pipeline.to("cuda")
         
         pipeline.load_ip_adapter(
             "h94/IP-Adapter", 
@@ -41,18 +50,6 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
         )
 
         pipeline.set_ip_adapter_scale(0.5)
-
-        # ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
-        # pipeline.unet.load_state_dict(ip_adapter, strict=False)
-
-        #pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
-
-        pipeline.enable_attention_slicing()
-        pipeline.enable_xformers_memory_efficient_attention()
-        pipeline.safety_checker = dummy_checker
-        
-        pipeline.enable_model_cpu_offload()
-        pipeline.to("cuda")
         
         print(f"Loaded Inpainting with Stable Diffusion 1.5 successfully with controlnets: {controlnets}")
 
@@ -82,6 +79,7 @@ def load_inpainting_pipeline():
         pipeline.safety_checker = dummy_checker
         
         pipeline.enable_model_cpu_offload()
+        #pipeline.to("cuda")
         
         print("Loaded Inpainting with Stable Diffusion 1.5 successfully")
 

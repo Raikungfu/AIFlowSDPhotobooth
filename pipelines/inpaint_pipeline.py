@@ -50,7 +50,7 @@ def inpaint_with_ip_sd_controlnet(
             "generator": generator,
             "control_image": control_images,
             "mask_image": mask,
-            "ip_adapter_image": image,
+            "ip_adapter_image": face_images,
         }
 
         with torch.inference_mode():
