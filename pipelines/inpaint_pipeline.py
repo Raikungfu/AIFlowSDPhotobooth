@@ -54,32 +54,33 @@ def inpaint_with_ip_sd_controlnet(
             "ip_adapter_image": face_images,
         }
 
-        def load_ip_adapter(pipeline):
-            pipeline.load_ip_adapter(
-                "h94/IP-Adapter",
-                subfolder="models",
-                weight_name="ip-adapter-plus-face_sd15.bin",
-                adapter_type=IPAdapterPlus,
-            )
-            pipeline.set_ip_adapter_scale(0.5)
+        def load_ip_adapter(pipeline, number=1):
+            for i in range(number):
+                pipeline.load_ip_adapter(
+                    "h94/IP-Adapter",
+                    subfolder="models",
+                    weight_name="ip-adapter-plus-face_sd15.bin",
+                    adapter_type=IPAdapterPlus,
+                )
+                pipeline.set_ip_adapter_scale(0.5)
 
         with torch.inference_mode():
             if controlnets == ["canny", "pose"]:
                 for _ in face_images:
-                    load_ip_adapter(pipeline_instance.controlnet_canny_pose_pipeline)
+                    load_ip_adapter(pipeline_instance.controlnet_canny_pose_pipeline, len(face_images))
                     results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
 
             elif controlnets in [["pose", "softedge"], ["pose", "scribble"]]:
-                load_ip_adapter(pipeline_instance.controlnet_canny_pose_pipeline)
+                load_ip_adapter(pipeline_instance.controlnet_canny_pose_pipeline, len(face_images))
                 pipeline_args["control_image"] = list(reversed(control_images))
                 results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
 
             elif controlnets == ["depth", "pose"]:
-                load_ip_adapter(pipeline_instance.controlnet_depth_pose_pipeline)
+                load_ip_adapter(pipeline_instance.controlnet_depth_pose_pipeline, len(face_images))
                 results = pipeline_instance.controlnet_depth_pose_pipeline(**pipeline_args).images
 
             elif controlnets in [["canny", "depth"], ["depth", "softedge"], ["depth", "scribble"]]:
-                load_ip_adapter(pipeline_instance.controlnet_canny_depth_pipeline)
+                load_ip_adapter(pipeline_instance.controlnet_canny_depth_pipeline, len(face_images))
                 results = pipeline_instance.controlnet_canny_depth_pipeline(**pipeline_args).images
 
             else:
