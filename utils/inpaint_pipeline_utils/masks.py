@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-from PIL import Image
+from PIL import Image, ImageDraw
 from models.face_detection import detect_faces, face_detector
 import traceback
 import requests
@@ -10,10 +10,12 @@ from utils.face_utils.image_utils import convert_image_to_numpy, ensure_uint8
 from torchvision import transforms
 
 
-def generate_face_lower_mask(image, image_mask, get_list_face):
+def generate_face_lower_mask(image, image_mask, get_list_face, margin_ratio = 0.2):
     try:
         if image is None:
             raise ValueError("Input images cannot be None!")
+        
+        image_width, image_height = image.size
 
         image_np = convert_image_to_numpy(image)
         image_np = ensure_uint8(image_np)
@@ -28,21 +30,29 @@ def generate_face_lower_mask(image, image_mask, get_list_face):
         list_face = []
         
         if get_list_face:
-            transform = transforms.Compose([
-                transforms.Resize((224, 224)),
-                transforms.ToTensor()
-            ])
             for face in faces:
                 x, y, w, h = face.left(), face.top(), face.width(), face.height()
-                face_crop = image_np[y:y+h, x:x+w]
-                pil_face = Image.fromarray(face_crop)
-                face_tensor = transform(pil_face).unsqueeze(0)
-                list_face.append(face_tensor) 
+
+                margin_w = int(w * margin_ratio)
+                margin_h = int(h * margin_ratio)
+
+                x1 = max(x - margin_w, 0)
+                y1 = max(y - margin_h, 0)
+                x2 = min(x + w + margin_w, image_width)
+                y2 = min(y + h + margin_h, image_height)
+
+                mask = Image.new("L", (image_width, image_height), 0)
+                draw = ImageDraw.Draw(mask)
+                draw.rectangle([x1, y1, x2, y2], fill=255)
+
+                list_face.append(mask)
+
+            return list_face
         else:
             face = faces[0]
             x, y, w, h = face.left(), face.top(), face.width(), face.height()
             face_crop = image_np[y:y+h, x:x+w]
-            list_face.append(Image.fromarray(face_crop))            
+            list_face.append(Image.fromarray(face_crop))     
 
         mask_clothes = mask_face = mask_combined = None
 

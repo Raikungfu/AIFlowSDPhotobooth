@@ -39,7 +39,7 @@ def inpaint_with_ip_sd_controlnet(
         mask = prepare_mask(image, mask, mode)
         generator = get_generator_list(number)
 
-        output_height, output_width = image.size
+        output_width, output_height = image.size
 
         processor = IPAdapterMaskProcessor()
         ipadapter_masks = processor.preprocess(face_images, height=output_height, width=output_width)
@@ -58,7 +58,7 @@ def inpaint_with_ip_sd_controlnet(
             "generator": generator,
             "control_image": control_images,
             "mask_image": mask,
-            "ip_adapter_image": [face_images],
+            "ip_adapter_image": [image],
             "cross_attention_kwargs":{"ip_adapter_masks": ipadapter_masks}
         }
 
@@ -66,24 +66,27 @@ def inpaint_with_ip_sd_controlnet(
             if controlnets == ["canny", "pose"]:
                 load_ip_adapter(pipeline_instance.controlnet_canny_pose_pipeline, len(face_images))
                 results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
+                pipeline_instance.controlnet_canny_pose_pipeline.unload_ip_adapter()
 
             elif controlnets in [["pose", "softedge"], ["pose", "scribble"]]:
                 load_ip_adapter(pipeline_instance.controlnet_canny_pose_pipeline, len(face_images))
                 pipeline_args["control_image"] = list(reversed(control_images))
                 results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
+                pipeline_instance.controlnet_canny_pose_pipeline.unload_ip_adapter()
 
             elif controlnets == ["depth", "pose"]:
                 load_ip_adapter(pipeline_instance.controlnet_depth_pose_pipeline, len(face_images))
                 results = pipeline_instance.controlnet_depth_pose_pipeline(**pipeline_args).images
+                pipeline_instance.controlnet_depth_pose_pipeline.unload_ip_adapter()
 
             elif controlnets in [["canny", "depth"], ["depth", "softedge"], ["depth", "scribble"]]:
                 load_ip_adapter(pipeline_instance.controlnet_canny_depth_pipeline, len(face_images))
                 results = pipeline_instance.controlnet_canny_depth_pipeline(**pipeline_args).images
+                pipeline_instance.controlnet_canny_depth_pipeline.unload_ip_adapter()
 
             else:
                 raise ValueError(f"Unsupported controlnets combination: {controlnets}")
         
-        pipeline_instance.inpainting_pipeline.unload_ip_adapter()
 
         if results is None:
             raise ValueError("Error: 'inpainting_pipeline()' returned null!")
