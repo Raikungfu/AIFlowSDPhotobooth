@@ -6,6 +6,7 @@ from configs.enums.inpaint_mode import InpaintMode
 from pipelines import pipeline_instance
 from utils.inpaint_pipeline_utils.masks import expand_mask
 from configs.const.prompt_clothes import prompts
+from ip_adapter import IPAdapterPlus
 
 
 def prepare_mask(image, mask, mode: InpaintMode):
@@ -34,6 +35,16 @@ def inpaint_with_ip_sd_controlnet(
     mode=InpaintMode.KEEP_FACE
 ):
     try:
+        for i in range(len(face_image)):
+            pipeline_instance.inpainting_pipeline.load_ip_adapter(
+                "h94/IP-Adapter", 
+                subfolder="models", 
+                weight_name="ip-adapter-plus-face_sd15.bin",
+                adapter_type=IPAdapterPlus
+            )
+
+            pipeline_instance.inpainting_pipeline.set_ip_adapter_scale(0.5)
+
         mask = prepare_mask(image, mask, mode)
         generator = get_generator_list(number)
 
@@ -65,6 +76,8 @@ def inpaint_with_ip_sd_controlnet(
                 results = pipeline_instance.controlnet_canny_depth_pipeline(**pipeline_args).images
             else:
                 raise ValueError(f"Unsupported controlnets combination: {controlnets}")
+        
+        pipeline_instance.inpainting_pipeline.unload_ip_adapter()
 
         if results is None:
             raise ValueError("Error: 'inpainting_pipeline()' returned null!")

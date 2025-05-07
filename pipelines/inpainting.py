@@ -10,6 +10,7 @@ from models.controlnets import controlnet_openpose, controlnet_canny, controlnet
 from ip_adapter import IPAdapterPlus
 
 
+
 def dummy_checker(images, **kwargs):
     return images, [False] * len(images)
 
@@ -27,7 +28,8 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
             MODEL_PATHS["inpainting_model"],
             torch_dtype=torch.float16,
             # low_cpu_mem_usage=True,
-            controlnet=selected_controlnets
+            controlnet=selected_controlnets,
+            device_map="auto"
         )
 
         # ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
@@ -39,17 +41,8 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.safety_checker = dummy_checker
         
-        pipeline.enable_model_cpu_offload()
+        #pipeline.enable_model_cpu_offload()
         #pipeline.to("cuda")
-        
-        pipeline.load_ip_adapter(
-            "h94/IP-Adapter", 
-            subfolder="models", 
-            weight_name="ip-adapter-plus-face_sd15.bin",
-            adapter_type=IPAdapterPlus
-        )
-
-        pipeline.set_ip_adapter_scale(0.5)
         
         print(f"Loaded Inpainting with Stable Diffusion 1.5 successfully with controlnets: {controlnets}")
 
@@ -64,6 +57,7 @@ def load_inpainting_pipeline():
         pipeline = StableDiffusionInpaintPipeline.from_pretrained(
             MODEL_PATHS["inpainting_model"],
             torch_dtype=torch.float16,
+            device_map="auto"
             # low_cpu_mem_usage=True,
         ).to("cuda")
 
@@ -77,9 +71,6 @@ def load_inpainting_pipeline():
         pipeline.enable_attention_slicing()
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.safety_checker = dummy_checker
-        
-        pipeline.enable_model_cpu_offload()
-        #pipeline.to("cuda")
         
         print("Loaded Inpainting with Stable Diffusion 1.5 successfully")
 

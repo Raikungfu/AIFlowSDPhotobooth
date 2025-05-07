@@ -4,8 +4,8 @@ from PIL import Image
 
 from configs.enums.inpaint_mode import InpaintMode
 from utils.face_utils.face_alignment import align_face
-from utils.image_utils.background_prcessing import place_on_new_background, remove_background
 from utils.image_utils.optimize_image import optimize_image
+from utils.image_utils.background_prcessing import place_on_new_background, remove_background
 from utils.inpaint_pipeline_utils.masks import generate_face_lower_mask
 
 
