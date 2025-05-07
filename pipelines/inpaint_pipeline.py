@@ -58,7 +58,7 @@ def inpaint_with_ip_sd_controlnet(
             "generator": generator,
             "control_image": control_images,
             "mask_image": mask,
-            "ip_adapter_image": [image],
+            "ip_adapter_image": [[image for _ in range(len(face_images))]],
             "cross_attention_kwargs":{"ip_adapter_masks": ipadapter_masks}
         }
 
