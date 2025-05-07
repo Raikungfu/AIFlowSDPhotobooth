@@ -7,7 +7,7 @@ from pipelines import pipeline_instance
 from pipelines.inpainting import load_ip_adapter
 from utils.inpaint_pipeline_utils.masks import expand_mask
 from configs.const.prompt_clothes import prompts
-from ip_adapter import IPAdapterPlus
+from diffusers.image_processor import IPAdapterMaskProcessor
 
 
 def prepare_mask(image, mask, mode: InpaintMode):
@@ -39,6 +39,12 @@ def inpaint_with_ip_sd_controlnet(
         mask = prepare_mask(image, mask, mode)
         generator = get_generator_list(number)
 
+        output_height, output_width = image.size
+
+        processor = IPAdapterMaskProcessor()
+        ipadapter_masks = processor.preprocess(face_images, height=output_height, width=output_width)
+        ipadapter_masks = [ipadapter_masks.reshape(1, ipadapter_masks.shape[0], ipadapter_masks.shape[2], ipadapter_masks.shape[3])]
+
         pipeline_args = {
             "image": [image],
             "prompt": prompt,
@@ -53,6 +59,7 @@ def inpaint_with_ip_sd_controlnet(
             "control_image": control_images,
             "mask_image": mask,
             "ip_adapter_image": [face_images],
+            "cross_attention_kwargs":{"ip_adapter_masks": ipadapter_masks}
         }
 
         with torch.inference_mode():

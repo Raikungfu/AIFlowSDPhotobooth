@@ -27,13 +27,8 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
         pipeline = StableDiffusionControlNetInpaintPipeline.from_pretrained(
             MODEL_PATHS["inpainting_model"],
             torch_dtype=torch.float16,
-            # low_cpu_mem_usage=True,
-            controlnet=selected_controlnets,
-            device_map="balanced"
+            controlnet=selected_controlnets
         )
-
-        # ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
-        # pipeline.unet.load_state_dict(ip_adapter, strict=False)
 
         pipeline.scheduler = EulerAncestralDiscreteScheduler.from_config(pipeline.scheduler.config)
 
@@ -41,8 +36,8 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.safety_checker = dummy_checker
         
-        #pipeline.enable_model_cpu_offload()
-        #pipeline.to("cuda")
+        pipeline.enable_model_cpu_offload()
+        pipeline.to("cuda")
         
         print(f"Loaded Inpainting with Stable Diffusion 1.5 successfully with controlnets: {controlnets}")
 
@@ -57,8 +52,6 @@ def load_inpainting_pipeline():
         pipeline = StableDiffusionInpaintPipeline.from_pretrained(
             MODEL_PATHS["inpainting_model"],
             torch_dtype=torch.float16,
-            device_map="balanced"
-            # low_cpu_mem_usage=True,
         )
 
         if pipeline is None:
@@ -71,6 +64,9 @@ def load_inpainting_pipeline():
         pipeline.enable_attention_slicing()
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.safety_checker = dummy_checker
+        
+        pipeline.enable_model_cpu_offload()
+        pipeline.to("cuda")
         
         print("Loaded Inpainting with Stable Diffusion 1.5 successfully")
 
@@ -89,5 +85,6 @@ def load_ip_adapter(pipeline, num_images=1):
         weight_name="ip-adapter-plus-face_sd15.bin",
         adapter_type=IPAdapterPlus,
     )
-    pipeline.set_ip_adapter_scale([ [0.5 for _ in range(num_images)] ])
+
+    pipeline.set_ip_adapter_scale([ [0.7 for _ in range(num_images)] ])
 
