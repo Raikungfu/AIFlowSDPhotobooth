@@ -17,6 +17,7 @@ def load_zoe_model(device="cuda" if torch.cuda.is_available() else "cpu"):
 
 
 def depth_image(image):
+    width, height = image.size
     if not isinstance(image, np.ndarray):
         image = np.array(image)
 
@@ -27,7 +28,7 @@ def depth_image(image):
 
     post_processed_output = pipeline_instance.zoe_image_processor.post_process_depth_estimation(
         outputs,
-        source_sizes=[(image.height, image.width)],
+        source_sizes=[(height, width)],
     )
 
     predicted_depth = post_processed_output[0]["predicted_depth"]

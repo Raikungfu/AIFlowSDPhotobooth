@@ -29,7 +29,7 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
             torch_dtype=torch.float16,
             # low_cpu_mem_usage=True,
             controlnet=selected_controlnets,
-            device_map="auto"
+            device_map="balanced"
         )
 
         # ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
@@ -57,9 +57,9 @@ def load_inpainting_pipeline():
         pipeline = StableDiffusionInpaintPipeline.from_pretrained(
             MODEL_PATHS["inpainting_model"],
             torch_dtype=torch.float16,
-            device_map="auto"
+            device_map="balanced"
             # low_cpu_mem_usage=True,
-        ).to("cuda")
+        )
 
         if pipeline is None:
             print("Inpainting_pipeline not loaded properly")
