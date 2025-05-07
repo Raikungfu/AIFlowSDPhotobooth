@@ -46,8 +46,6 @@ def generate_face_lower_mask(image, image_mask, get_list_face, margin_ratio = 0.
                 draw.rectangle([x1, y1, x2, y2], fill=255)
 
                 list_face.append(mask)
-
-            return list_face
         else:
             face = faces[0]
             x, y, w, h = face.left(), face.top(), face.width(), face.height()
