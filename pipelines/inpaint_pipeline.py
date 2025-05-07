@@ -4,6 +4,7 @@ import random
 from PIL import Image
 from configs.enums.inpaint_mode import InpaintMode
 from pipelines import pipeline_instance
+from pipelines.inpainting import load_ip_adapter
 from utils.inpaint_pipeline_utils.masks import expand_mask
 from configs.const.prompt_clothes import prompts
 from ip_adapter import IPAdapterPlus
@@ -51,21 +52,8 @@ def inpaint_with_ip_sd_controlnet(
             "generator": generator,
             "control_image": control_images,
             "mask_image": mask,
-            "ip_adapter_image": face_images,
+            "ip_adapter_image": [face_images],
         }
-
-        def load_ip_adapter(pipeline, number=1, adapters=["ip-adapter-plus-face_sd15.bin"]):
-            if len(adapters) < number:
-                adapters.extend([adapters[0]] * (number - len(adapters)))
-
-            for i in range(number):
-                pipeline.load_ip_adapter(
-                    "h94/IP-Adapter",
-                    subfolder="models",
-                    weight_name=adapters,
-                    adapter_type=IPAdapterPlus,
-                )
-                pipeline.set_ip_adapter_scale(0.5)
 
         with torch.inference_mode():
             if controlnets == ["canny", "pose"]:

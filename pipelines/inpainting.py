@@ -79,3 +79,15 @@ def load_inpainting_pipeline():
         traceback.print_exc()
         print(f"Error during loading inpainting pipeline: {e}")
         return None
+    
+
+
+def load_ip_adapter(pipeline, num_images=1):
+    pipeline.load_ip_adapter(
+        "h94/IP-Adapter",
+        subfolder="models",
+        weight_name="ip-adapter-plus-face_sd15.bin",
+        adapter_type=IPAdapterPlus,
+    )
+    pipeline.set_ip_adapter_scale([ [0.5 for _ in range(num_images)] ])
+
