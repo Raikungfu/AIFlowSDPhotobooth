@@ -54,12 +54,15 @@ def inpaint_with_ip_sd_controlnet(
             "ip_adapter_image": face_images,
         }
 
-        def load_ip_adapter(pipeline, number=1):
+        def load_ip_adapter(pipeline, number=1, adapters=["ip-adapter-plus-face_sd15.bin"]):
+            if len(adapters) < number:
+                adapters.extend([adapters[0]] * (number - len(adapters)))
+
             for i in range(number):
                 pipeline.load_ip_adapter(
                     "h94/IP-Adapter",
                     subfolder="models",
-                    weight_name="ip-adapter-plus-face_sd15.bin",
+                    weight_name=adapters,
                     adapter_type=IPAdapterPlus,
                 )
                 pipeline.set_ip_adapter_scale(0.5)
