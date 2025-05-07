@@ -7,11 +7,12 @@ import requests
 from io import BytesIO
 from utils.face_utils.face_detection import get_face_landmarks
 from utils.face_utils.image_utils import convert_image_to_numpy, ensure_uint8
+from torchvision import transforms
 
 
-def generate_face_lower_mask(image, image_mask):
+def generate_face_lower_mask(image, image_mask, get_list_face):
     try:
-        if image is None or image_mask is None:
+        if image is None:
             raise ValueError("Input images cannot be None!")
 
         image_np = convert_image_to_numpy(image)
@@ -22,27 +23,42 @@ def generate_face_lower_mask(image, image_mask):
 
         if len(faces) == 0:
             print("No face detected.")
-            return None, None, None, None
+            return None, None, None
+        
+        list_face = []
+        
+        if get_list_face:
+            transform = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.ToTensor()
+            ])
+            for face in faces:
+                x, y, w, h = face.left(), face.top(), face.width(), face.height()
+                face_crop = image_np[y:y+h, x:x+w]
+                pil_face = Image.fromarray(face_crop)
+                face_tensor = transform(pil_face).unsqueeze(0)
+                list_face.append(face_tensor) 
+        else:
+            face = faces[0]
+            x, y, w, h = face.left(), face.top(), face.width(), face.height()
+            face_crop = image_np[y:y+h, x:x+w]
+            list_face.append(Image.fromarray(face_crop))            
 
-        face = faces[0]
-        landmarks = get_face_landmarks(gray, face)
-        upper_lip_y = landmarks.part(51).y
-        jaw_points = np.array([[landmarks.part(i).x, landmarks.part(i).y] for i in range(0, 17)])
+        mask_clothes = mask_face = mask_combined = None
 
-        # Get the face region and crop it
-        x, y, w, h = face.left(), face.top(), face.width(), face.height()
-        face_crop = image_np[y:y+h, x:x+w]
-        face_image = Image.fromarray(face_crop)
+        if image_mask is not None:
+            landmarks = get_face_landmarks(gray, faces[0])
+            upper_lip_y = landmarks.part(51).y
+            jaw_points = np.array([[landmarks.part(i).x, landmarks.part(i).y] for i in range(0, 17)])
+            mask_clothes = create_clothes_mask(image_mask, upper_lip_y, jaw_points)
+            mask_face = create_face_mask(image_mask, upper_lip_y, jaw_points)
+            mask_combined = create_combined_mask(np.array(mask_face), np.array(mask_clothes))
 
-        mask_clothes = create_clothes_mask(image_mask, upper_lip_y, jaw_points)
-        mask_face = create_face_mask(image_mask, upper_lip_y, jaw_points)
-        mask_combined = create_combined_mask(np.array(mask_face), np.array(mask_clothes))
-
-        return mask_face, mask_clothes, mask_combined, face_image
+        return mask_clothes, mask_combined, list_face
     except Exception as e:
         print(f"Error to create lower mask: {e}")
         traceback.print_exc()
-        return None, None, None, None
+        return None, None, None
 
 
 

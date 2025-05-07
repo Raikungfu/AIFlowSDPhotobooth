@@ -7,6 +7,8 @@ from diffusers import (
     EulerAncestralDiscreteScheduler
 )
 from models.controlnets import controlnet_openpose, controlnet_canny, controlnet_depth
+from ip_adapter import IPAdapterPlus
+
 
 
 def dummy_checker(images, **kwargs):
@@ -69,9 +71,6 @@ def load_inpainting_pipeline():
         pipeline.enable_attention_slicing()
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.safety_checker = dummy_checker
-        
-        #pipeline.enable_model_cpu_offload()
-        #pipeline.to("cuda")
         
         print("Loaded Inpainting with Stable Diffusion 1.5 successfully")
 
