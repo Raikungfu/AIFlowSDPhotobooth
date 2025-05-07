@@ -66,9 +66,8 @@ def inpaint_with_ip_sd_controlnet(
 
         with torch.inference_mode():
             if controlnets == ["canny", "pose"]:
-                for _ in face_images:
-                    load_ip_adapter(pipeline_instance.controlnet_canny_pose_pipeline, len(face_images))
-                    results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
+                load_ip_adapter(pipeline_instance.controlnet_canny_pose_pipeline, len(face_images))
+                results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
 
             elif controlnets in [["pose", "softedge"], ["pose", "scribble"]]:
                 load_ip_adapter(pipeline_instance.controlnet_canny_pose_pipeline, len(face_images))
