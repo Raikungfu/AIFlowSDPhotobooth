@@ -3,9 +3,11 @@ from configs.model_paths import MODEL_PATHS
 from diffusers import (
     UniPCMultistepScheduler,
     StableDiffusionInpaintPipeline,
-    StableDiffusionControlNetInpaintPipeline
+    StableDiffusionControlNetInpaintPipeline,
+    EulerAncestralDiscreteScheduler
 )
 from models.controlnets import controlnet_openpose, controlnet_canny, controlnet_depth
+
 
 def dummy_checker(images, **kwargs):
     return images, [False] * len(images)
@@ -24,22 +26,21 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
             MODEL_PATHS["inpainting_model"],
             torch_dtype=torch.float16,
             # low_cpu_mem_usage=True,
-            controlnet=selected_controlnets
+            controlnet=selected_controlnets,
+            device_map="auto"
         )
 
-        pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
+        # ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
+        # pipeline.unet.load_state_dict(ip_adapter, strict=False)
 
-        ip_adapter = torch.load(MODEL_PATHS["ip_adapter"], map_location="cuda")
-        pipeline.unet.load_state_dict(ip_adapter, strict=False)
-
-        pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
+        pipeline.scheduler = EulerAncestralDiscreteScheduler.from_config(pipeline.scheduler.config)
 
         pipeline.enable_attention_slicing()
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.safety_checker = dummy_checker
         
-        pipeline.enable_model_cpu_offload()
-        pipeline.to("cuda")
+        #pipeline.enable_model_cpu_offload()
+        #pipeline.to("cuda")
         
         print(f"Loaded Inpainting with Stable Diffusion 1.5 successfully with controlnets: {controlnets}")
 
@@ -54,6 +55,7 @@ def load_inpainting_pipeline():
         pipeline = StableDiffusionInpaintPipeline.from_pretrained(
             MODEL_PATHS["inpainting_model"],
             torch_dtype=torch.float16,
+            device_map="auto"
             # low_cpu_mem_usage=True,
         ).to("cuda")
 
@@ -62,16 +64,14 @@ def load_inpainting_pipeline():
         else:
             print("Inpainting_pipeline loaded successfully")
 
-        ip_adapter = torch.load(MODEL_PATHS["ip_adapter"])
-        pipeline.unet.load_state_dict(ip_adapter, strict=False)
-
         pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
 
         pipeline.enable_attention_slicing()
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.safety_checker = dummy_checker
         
-        pipeline.enable_model_cpu_offload()
+        #pipeline.enable_model_cpu_offload()
+        #pipeline.to("cuda")
         
         print("Loaded Inpainting with Stable Diffusion 1.5 successfully")
 
