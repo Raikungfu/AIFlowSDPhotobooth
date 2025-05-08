@@ -16,28 +16,19 @@ def start_worker():
     while True:
         try:
             print("Connecting to RabbitMQ...")
-            params = pika.URLParameters(RABBITMQ_URL)
-            connection = pika.BlockingConnection(params)
-            channel = connection.channel()
-
-            channel.queue_declare(queue=QUEUE_NAME, durable=False, exclusive=False, auto_delete=False, arguments={"x-message-ttl": 300000})
-            #channel.basic_qos(prefetch_count=1)
-            channel.basic_consume(queue=QUEUE_NAME, auto_ack=True, on_message_callback=RabbitMQReceiver.callback)
-
+            receiver = RabbitMQReceiver(queue_name=QUEUE_NAME, max_workers=3)
+            receiver.start_listening()
             print("Worker connected and listening...")
 
-            while connection.is_open:
-                connection.process_data_events(time_limit=1)
-                time.sleep(0.5)
-
         except (pika.exceptions.AMQPError, pika.exceptions.ConnectionClosed) as e:
-            print(f"Connect error: {e}, try to connect after 5 second...")
-            try:
-                if connection.is_open:
-                    return
-            except:
-                pass
+            print(f"[RabbitMQ] Connection error: {e}. Reconnecting in 5 seconds...")
+            traceback.print_exc()
             time.sleep(5)
+        except Exception as e:
+            print(f"[Worker] Unexpected error: {e}")
+            traceback.print_exc()
+            time.sleep(5)
+
 
 if __name__ == '__main__':
     try:
