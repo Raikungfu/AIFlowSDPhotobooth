@@ -66,23 +66,23 @@ def inpaint_with_ip_sd_controlnet(
             if controlnets == ["canny", "pose"]:
                 load_ip_adapter(pipeline_instance.controlnet_canny_pose_pipeline, len(face_images))
                 results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
-                pipeline_instance.controlnet_canny_pose_pipeline.unload_ip_adapter()
+                #pipeline_instance.controlnet_canny_pose_pipeline.unload_ip_adapter()
 
             elif controlnets in [["pose", "softedge"], ["pose", "scribble"]]:
                 load_ip_adapter(pipeline_instance.controlnet_canny_pose_pipeline, len(face_images))
                 pipeline_args["control_image"] = list(reversed(control_images))
                 results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
-                pipeline_instance.controlnet_canny_pose_pipeline.unload_ip_adapter()
+                #pipeline_instance.controlnet_canny_pose_pipeline.unload_ip_adapter()
 
             elif controlnets == ["depth", "pose"]:
                 load_ip_adapter(pipeline_instance.controlnet_depth_pose_pipeline, len(face_images))
                 results = pipeline_instance.controlnet_depth_pose_pipeline(**pipeline_args).images
-                pipeline_instance.controlnet_depth_pose_pipeline.unload_ip_adapter()
+                #pipeline_instance.controlnet_depth_pose_pipeline.unload_ip_adapter()
 
             elif controlnets in [["canny", "depth"], ["depth", "softedge"], ["depth", "scribble"]]:
                 load_ip_adapter(pipeline_instance.controlnet_canny_depth_pipeline, len(face_images))
                 results = pipeline_instance.controlnet_canny_depth_pipeline(**pipeline_args).images
-                pipeline_instance.controlnet_canny_depth_pipeline.unload_ip_adapter()
+                #pipeline_instance.controlnet_canny_depth_pipeline.unload_ip_adapter()
 
             else:
                 raise ValueError(f"Unsupported controlnets combination: {controlnets}")

@@ -21,7 +21,7 @@ def start_worker():
             channel = connection.channel()
 
             channel.queue_declare(queue=QUEUE_NAME, durable=False, exclusive=False, auto_delete=False, arguments={"x-message-ttl": 300000})
-            channel.basic_qos(prefetch_count=1)
+            #channel.basic_qos(prefetch_count=1)
             channel.basic_consume(queue=QUEUE_NAME, auto_ack=True, on_message_callback=RabbitMQReceiver.callback)
 
             print("Worker connected and listening...")

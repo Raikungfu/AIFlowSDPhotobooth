@@ -38,6 +38,13 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
         
         pipeline.enable_model_cpu_offload()
         pipeline.to("cuda")
+
+        pipeline.load_ip_adapter(
+            "h94/IP-Adapter",
+            subfolder="models",
+            weight_name="ip-adapter-plus-face_sd15.bin",
+            adapter_type=IPAdapterPlus,
+        )
         
         print(f"Loaded Inpainting with Stable Diffusion 1.5 successfully with controlnets: {controlnets}")
 
@@ -79,12 +86,4 @@ def load_inpainting_pipeline():
 
 
 def load_ip_adapter(pipeline, num_images=1):
-    pipeline.load_ip_adapter(
-        "h94/IP-Adapter",
-        subfolder="models",
-        weight_name="ip-adapter-plus-face_sd15.bin",
-        adapter_type=IPAdapterPlus,
-    )
-
     pipeline.set_ip_adapter_scale([ [0.7 for _ in range(num_images)] ])
-
