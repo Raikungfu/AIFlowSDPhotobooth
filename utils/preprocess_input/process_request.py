@@ -21,7 +21,8 @@ def extract_message_data(message):
         "height": message.get("height"),
         "width": message.get("width"),
         "mode": mode_map[message.get("mode", 0)],
-        "num_inference_steps": message.get("numInferenceSteps", 30)
+        "num_inference_steps": message.get("numInferenceSteps", 30),
+        "ip_adapter_scale": message.get("ipAdapterScale", 0.5),
     }
 
 def validate_message(data):

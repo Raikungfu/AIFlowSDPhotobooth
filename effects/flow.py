@@ -13,11 +13,11 @@ def process_image(
     numInferenceSteps,
     guidance_scale,
     strength,
-    face_image,
     background_remover,
     height,
     width,
-    mode
+    mode,
+    ip_adapter_scale
 ):
     try:
         optimized_image = align_and_optimize_image(image, "ID Photo" in photo_style)
@@ -70,6 +70,7 @@ def process_image(
                 width=width,
                 control_images=control_images if control_images else None,
                 controlnets=controlnet_models,
+                ip_adapter_scale=ip_adapter_scale,
                 mode=mode,
             )
         

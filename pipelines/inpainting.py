@@ -85,5 +85,5 @@ def load_inpainting_pipeline():
     
 
 
-def load_ip_adapter(pipeline, num_images=1):
-    pipeline.set_ip_adapter_scale([ [0.7 for _ in range(num_images)] ])
+def load_ip_adapter(pipeline, ip_adapter_scale, num_images=1):
+    pipeline.set_ip_adapter_scale([ [ip_adapter_scale for _ in range(num_images)] ])

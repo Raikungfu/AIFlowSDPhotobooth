@@ -3,7 +3,7 @@ import time
 import traceback
 import pika
 from flask import Flask
-from configs.const.style import QUEUE_NAME, RABBITMQ_URL
+from configs.const.style import QUEUE_NAME
 from queues.receiver import RabbitMQReceiver
 from pipelines.inpainting import load_inpainting_controlnet_pipeline, load_inpainting_pipeline
 from pipelines import pipeline_instance
@@ -37,7 +37,7 @@ if __name__ == '__main__':
         pipeline_instance.controlnet_canny_pose_pipeline = load_inpainting_controlnet_pipeline(controlnets=["canny", "pose"])
         pipeline_instance.zoe_image_processor, pipeline_instance.zoe_model, pipeline_instance.device = load_zoe_model()
         pipeline_instance.openpose_processor = load_openpose_processor()
-        pipeline_instance.controlnet_depth_pose_pipeline = load_inpainting_controlnet_pipeline(controlnets=[ "depth" , "pose"])
+        pipeline_instance.controlnet_depth_pose_pipeline = load_inpainting_controlnet_pipeline(controlnets=["depth", "pose"])
         pipeline_instance.controlnet_canny_depth_pipeline = load_inpainting_controlnet_pipeline(controlnets=["canny", "depth"])
         # Load basic inpainting pipeline
         pipeline_instance.inpainting_pipeline = load_inpainting_pipeline()

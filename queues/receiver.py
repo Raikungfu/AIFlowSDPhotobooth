@@ -1,4 +1,5 @@
 import json
+import pika
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 from utils.preprocess_input.process_request import extract_message_data, validate_message
@@ -8,16 +9,17 @@ from queues.sender import RabbitMQSender
 from utils.upload_image.firebase_utils import initialize_firebase
 from utils.upload_image.image_upload import download_image, parallel_upload_images
 from configs.const.config import cred_path, firebaseConfig
-from configs.const.style import REPLY_QUEUE
+from configs.const.style import REPLY_QUEUE, RABBITMQ_URL
 
 bucket = initialize_firebase(cred_path, firebaseConfig)
 
 class RabbitMQReceiver:
     def __init__(self, queue_name, max_workers=3):
         self.queue = queue_name
-        self.connection = RabbitMQConnection(queue_name)
-        self.channel = self.connection.get_channel()
-        self.channel.queue_declare(queue=self.queue, durable=False, exclusive=False, auto_delete=False)
+        params = pika.URLParameters(RABBITMQ_URL)
+        self.connection = pika.BlockingConnection(params)
+        self.channel = self.connection.channel()
+        self.channel.queue_declare(queue=self.queue, durable=False, exclusive=False, auto_delete=False, arguments={"x-message-ttl": 300000})
         self.channel.basic_qos(prefetch_count=max_workers)
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
 
@@ -62,18 +64,18 @@ def handle_message(ch, method, body):
             data["num_inference_steps"],
             data["guidance_scale"],
             data["strength"],
-            data["face_image"],
             data["background_remover"],
             data["height"],
             data["width"],
-            data["mode"]
+            data["mode"],
+            data["ip_adapter_scale"],
         )
 
         if not processed_images:
             raise ValueError("Failed to process image")
         
         uploaded_urls = parallel_upload_images(processed_images, bucket)
-        print(f"[✓] Processed and uploaded {len(uploaded_urls)} images.")
+        print(f"Processed and uploaded {len(uploaded_urls)} images.")
 
         send_response({
             "CorrelationId": data["correlation_id"],
@@ -85,9 +87,9 @@ def handle_message(ch, method, body):
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     except json.JSONDecodeError:
-        print("[✗] Invalid JSON received.")
+        print("Invalid JSON received.")
         ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
-        print(f"[✗] Unexpected error: {e}")
+        print(f"Unexpected error: {e}")
         traceback.print_exc()
         ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
