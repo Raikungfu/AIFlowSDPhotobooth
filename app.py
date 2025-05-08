@@ -3,7 +3,7 @@ import time
 import traceback
 import pika
 from flask import Flask
-from configs.const.style import QUEUE_NAME
+from configs.const.style import QUEUE_NAMES
 from queues.receiver import RabbitMQReceiver
 from pipelines.inpainting import load_inpainting_controlnet_pipeline, load_inpainting_pipeline
 from pipelines import pipeline_instance
@@ -12,11 +12,11 @@ from image_input_controlnets.open_pose import load_openpose_processor
 
 app = Flask(__name__)
 
-def start_worker():
+def start_worker(queue_name):
     while True:
         try:
             print("Connecting to RabbitMQ...")
-            receiver = RabbitMQReceiver(queue_name=QUEUE_NAME, max_workers=3)
+            receiver = RabbitMQReceiver(queue_name=queue_name, max_workers=1)
             receiver.start_listening()
             print("Worker connected and listening...")
 
@@ -41,7 +41,8 @@ if __name__ == '__main__':
         pipeline_instance.controlnet_canny_depth_pipeline = load_inpainting_controlnet_pipeline(controlnets=["canny", "depth"])
         # Load basic inpainting pipeline
         pipeline_instance.inpainting_pipeline = load_inpainting_pipeline()
-        threading.Thread(target=start_worker, daemon=True).start()
+        for queue_name in QUEUE_NAMES:
+            threading.Thread(target=start_worker, args=(queue_name,), daemon=True).start()
         app.run(host='0.0.0.0', port=5000, threaded=True)
     except Exception as e:
         traceback.print_exc()
