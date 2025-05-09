@@ -4,7 +4,6 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from utils.preprocess_input.process_request import extract_message_data, validate_message
 from effects.flow import process_image
-from queues.connection import RabbitMQConnection
 from queues.sender import RabbitMQSender
 from utils.upload_image.firebase_utils import initialize_firebase
 from utils.upload_image.image_upload import download_image, parallel_upload_images
@@ -37,6 +36,7 @@ class RabbitMQReceiver:
         except Exception as e:
             print("Error processing message in thread pool:", e)
             traceback.print_exc()
+
 
 def send_response(response):
     with RabbitMQSender(REPLY_QUEUE) as sender:
@@ -92,4 +92,4 @@ def handle_message(ch, method, body):
     except Exception as e:
         print(f"Unexpected error: {e}")
         traceback.print_exc()
-        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)

@@ -5,6 +5,7 @@ from PIL import Image
 from configs.enums.inpaint_mode import InpaintMode
 from pipelines import pipeline_instance
 from pipelines.inpainting import load_ip_adapter
+from utils.face_utils.image_utils import ensure_pil_images
 from utils.inpaint_pipeline_utils.masks import expand_mask
 from configs.const.prompt_clothes import prompts
 from diffusers.image_processor import IPAdapterMaskProcessor
@@ -40,6 +41,8 @@ def inpaint_with_ip_sd_controlnet(
         generator = get_generator_list(number)
 
         output_width, output_height = image.size
+
+        face_images = ensure_pil_images(face_images)
 
         processor = IPAdapterMaskProcessor()
         ipadapter_masks = processor.preprocess(face_images, height=output_height, width=output_width)
