@@ -37,7 +37,7 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
         pipeline.safety_checker = dummy_checker
         
         pipeline.enable_model_cpu_offload()
-        pipeline.to("cuda")
+        #pipeline.to("cuda")
 
         print(f"Loaded Inpainting with Stable Diffusion 1.5 successfully with controlnets: {controlnets}")
 
@@ -66,7 +66,7 @@ def load_inpainting_pipeline():
         pipeline.safety_checker = dummy_checker
         
         pipeline.enable_model_cpu_offload()
-        pipeline.to("cuda")
+        #pipeline.to("cuda")
         
         print("Loaded Inpainting with Stable Diffusion 1.5 successfully")
 
