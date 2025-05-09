@@ -33,9 +33,11 @@ class RabbitMQReceiver:
     def safe_handle_message(self, ch, method, body):
         try:
             handle_message(ch, method, body)
+            ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
-            print("Error processing message in thread pool:", e)
+            print("Error processing message:", e)
             traceback.print_exc()
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
 
 def send_response(response):
@@ -84,12 +86,7 @@ def handle_message(ch, method, body):
             "PhotoStyleId": data["photo_style_id"]
         })
 
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-
     except json.JSONDecodeError:
-        print("Invalid JSON received.")
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+        raise ValueError("Invalid JSON format")
     except Exception as e:
-        print(f"Unexpected error: {e}")
-        traceback.print_exc()
-        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+        raise
