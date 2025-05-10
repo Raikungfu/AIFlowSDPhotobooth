@@ -24,7 +24,7 @@ def process_image(
 
         inpainted_images = []
 
-        if height == None or width == None:
+        if height == None or height == 0 or width == None or width == 0:
             height = closestNumber(optimized_image.height, 8)
             width =  closestNumber(optimized_image.width, 8)
         else:
