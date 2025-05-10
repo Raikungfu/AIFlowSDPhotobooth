@@ -37,7 +37,8 @@ class RabbitMQReceiver:
         except Exception as e:
             print("Error processing message:", e)
             traceback.print_exc()
-            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            #ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
 
 def send_response(response):
