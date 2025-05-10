@@ -15,9 +15,10 @@ class RabbitMQConnection:
         retry_delay = 2
         context = ssl.create_default_context()
         params = pika.URLParameters(RABBITMQ_URL)
-        params.heartbeat = 30
+        params.heartbeat = 15
         params.connection_attempts = 5
         params.retry_delay = 3
+        params.blocked_connection_timeout = 30
         params.ssl_options = pika.SSLOptions(context)
 
         for attempt in range(max_retries):
