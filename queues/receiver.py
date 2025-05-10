@@ -16,8 +16,7 @@ bucket = initialize_firebase(cred_path, firebaseConfig)
 class RabbitMQReceiver:
     def __init__(self, queue_name, max_workers=3):
         self.queue = queue_name
-        params = pika.URLParameters(RABBITMQ_URL)
-        self.connection = pika.BlockingConnection(params)
+        self.connection_handler = RabbitMQConnection(queue_name)
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=self.queue, durable=False, exclusive=False, auto_delete=False, arguments={"x-message-ttl": 300000})
         self.channel.basic_qos(prefetch_count=max_workers)
@@ -39,7 +38,6 @@ class RabbitMQReceiver:
             print("Error processing message:", e)
             traceback.print_exc()
             ch.basic_ack(delivery_tag=method.delivery_tag)
-            #ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
 
 def send_response(response):
