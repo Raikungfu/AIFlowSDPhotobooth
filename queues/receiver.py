@@ -19,7 +19,7 @@ class RabbitMQReceiver:
         self.channel.queue_declare(queue=self.queue, durable=False, exclusive=False, auto_delete=False)
     
     def start_listening(self):
-        self.channel.basic_consume(queue=self.queue, on_message_callback=self.callback, auto_ack=True)
+        self.channel.basic_consume(queue=self.queue, on_message_callback=self.callback, auto_ack=False)
         print(f"Listening for messages on '{self.queue}'...")
         self.channel.start_consuming()
 
@@ -37,7 +37,6 @@ class RabbitMQReceiver:
 def send_response(response):
     with RabbitMQSender(REPLY_QUEUE) as sender:
         sender.send_response(response)
-
 
 
 def handle_message(ch, method, body):
