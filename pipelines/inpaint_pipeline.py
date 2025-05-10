@@ -96,7 +96,7 @@ def inpaint_with_ip_sd_controlnet(
     except Exception as e:
         traceback.print_exc()
         print(f"Error during inpainting with ControlNet: {e}")
-        return None
+        raise
 
 
 def inpaint_without_controlnet(
