@@ -46,7 +46,6 @@ class RabbitMQReceiver:
                 data["num_inference_steps"],
                 data["guidance_scale"],
                 data["strength"],
-                data["face_image"],
                 data["background_remover"],
                 data["height"],
                 data["width"],

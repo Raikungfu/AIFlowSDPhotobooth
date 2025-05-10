@@ -79,7 +79,6 @@ def load_inpainting_pipeline():
 
 
 def load_ip_adapter(pipeline, ip_adapter_scale, num_images=1):
-    ip_adapter_scale = float(ip_adapter_scale)
     pipeline.load_ip_adapter(
         "h94/IP-Adapter",
         subfolder="models",
