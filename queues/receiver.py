@@ -1,37 +1,31 @@
 import json
-import pika
 import traceback
-from concurrent.futures import ThreadPoolExecutor
-from queues.connection import RabbitMQConnection
 from utils.preprocess_input.process_request import extract_message_data, validate_message
 from effects.flow import process_image
+from queues.connection import RabbitMQConnection
 from queues.sender import RabbitMQSender
 from utils.upload_image.firebase_utils import initialize_firebase
 from utils.upload_image.image_upload import download_image, parallel_upload_images
 from configs.const.config import cred_path, firebaseConfig
-from configs.const.style import REPLY_QUEUE, RABBITMQ_URL
+from configs.const.style import REPLY_QUEUE
 
 bucket = initialize_firebase(cred_path, firebaseConfig)
 
 class RabbitMQReceiver:
-    def __init__(self, queue_name, max_workers=3):
+    def __init__(self, queue_name):
         self.queue = queue_name
-        self.connection = RabbitMQConnection(queue_name)
+        self.connection = RabbitMQConnection()
         self.channel = self.connection.get_channel()
-        self.channel.queue_declare(queue=self.queue, durable=False, exclusive=False, auto_delete=False, arguments={"x-message-ttl": 300000})
-        self.channel.basic_qos(prefetch_count=max_workers)
-        self.executor = ThreadPoolExecutor(max_workers=max_workers)
-
+        self.channel.queue_declare(queue=self.queue, durable=False, exclusive=False, auto_delete=False)
+    
     def start_listening(self):
-        self.channel.basic_consume(queue=self.queue, on_message_callback=self.callback, auto_ack=False)
-        print(f"Listening for messages on '{self.queue}' with max {self.executor._max_workers} concurrent workers...")
+        self.channel.basic_consume(queue=self.queue, on_message_callback=self.callback, auto_ack=True)
+        print(f"Listening for messages on '{self.queue}'...")
         self.channel.start_consuming()
 
-    def callback(self, ch, method, properties, body):
-        self.executor.submit(self.safe_handle_message, ch, method, body)
 
-    def safe_handle_message(self, ch, method, body):
-        try:
+    def callback(ch, method, properties, body):
+        try:            
             handle_message(ch, method, body)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
@@ -43,6 +37,7 @@ class RabbitMQReceiver:
 def send_response(response):
     with RabbitMQSender(REPLY_QUEUE) as sender:
         sender.send_response(response)
+
 
 def handle_message(ch, method, body):
     try:

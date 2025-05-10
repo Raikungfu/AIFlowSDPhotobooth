@@ -67,33 +67,25 @@ def inpaint_with_ip_sd_controlnet(
 
         with torch.inference_mode():
             if controlnets == ["canny", "pose"]:
-                pipeline_instance.controlnet_canny_pose_pipeline.to("cuda")
                 load_ip_adapter(pipeline_instance.controlnet_canny_pose_pipeline, ip_adapter_scale, len(face_images))
                 results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
                 pipeline_instance.controlnet_canny_pose_pipeline.unload_ip_adapter()
-                pipeline_instance.controlnet_canny_pose_pipeline.to("cpu")
 
             elif controlnets in [["pose", "softedge"], ["pose", "scribble"]]:
-                pipeline_instance.controlnet_canny_pose_pipeline.to("cuda")
                 load_ip_adapter(pipeline_instance.controlnet_canny_pose_pipeline, ip_adapter_scale, len(face_images))
                 pipeline_args["control_image"] = list(reversed(control_images))
                 results = pipeline_instance.controlnet_canny_pose_pipeline(**pipeline_args).images
                 pipeline_instance.controlnet_canny_pose_pipeline.unload_ip_adapter()
-                pipeline_instance.controlnet_canny_pose_pipeline.to("cpu")
 
             elif controlnets == ["depth", "pose"]:
-                pipeline_instance.controlnet_depth_pose_pipeline.to("cuda")
                 load_ip_adapter(pipeline_instance.controlnet_depth_pose_pipeline, ip_adapter_scale, len(face_images))
                 results = pipeline_instance.controlnet_depth_pose_pipeline(**pipeline_args).images
                 pipeline_instance.controlnet_depth_pose_pipeline.unload_ip_adapter()
-                pipeline_instance.controlnet_depth_pose_pipeline.to("cpu")
-
+                
             elif controlnets in [["canny", "depth"], ["depth", "softedge"], ["depth", "scribble"]]:
-                pipeline_instance.controlnet_canny_depth_pipeline.to("cuda")
                 load_ip_adapter(pipeline_instance.controlnet_canny_depth_pipeline, ip_adapter_scale, len(face_images))
                 results = pipeline_instance.controlnet_canny_depth_pipeline(**pipeline_args).images
                 pipeline_instance.controlnet_canny_depth_pipeline.unload_ip_adapter()
-                pipeline_instance.controlnet_canny_depth_pipeline.to("cpu")
 
             else:
                 raise ValueError(f"Unsupported controlnets combination: {controlnets}")
