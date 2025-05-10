@@ -46,11 +46,11 @@ class RabbitMQReceiver:
                 data["num_inference_steps"],
                 data["guidance_scale"],
                 data["strength"],
-                data["face_image"],
                 data["background_remover"],
                 data["height"],
                 data["width"],
-                data["mode"]
+                data["mode"],
+                data["ip_adapter_scale"],
             )
 
             if not processed_images:

@@ -36,7 +36,7 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.safety_checker = dummy_checker
         
-        pipeline.enable_model_cpu_offload()
+        #pipeline.enable_model_cpu_offload()
         pipeline.to("cuda")
         
         print(f"Loaded Inpainting with Stable Diffusion 1.5 successfully with controlnets: {controlnets}")
@@ -65,7 +65,7 @@ def load_inpainting_pipeline():
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.safety_checker = dummy_checker
         
-        pipeline.enable_model_cpu_offload()
+        #pipeline.enable_model_cpu_offload()
         pipeline.to("cuda")
         
         print("Loaded Inpainting with Stable Diffusion 1.5 successfully")
@@ -78,7 +78,7 @@ def load_inpainting_pipeline():
     
 
 
-def load_ip_adapter(pipeline, num_images=1):
+def load_ip_adapter(pipeline, ip_adapter_scale, num_images=1):
     pipeline.load_ip_adapter(
         "h94/IP-Adapter",
         subfolder="models",
@@ -86,5 +86,5 @@ def load_ip_adapter(pipeline, num_images=1):
         adapter_type=IPAdapterPlus,
     )
 
-    pipeline.set_ip_adapter_scale([ [0.7 for _ in range(num_images)] ])
+    pipeline.set_ip_adapter_scale([ [ip_adapter_scale for _ in range(num_images)] ])
 
