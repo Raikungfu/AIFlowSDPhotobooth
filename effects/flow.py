@@ -70,8 +70,8 @@ def process_image(
                 width=width,
                 control_images=control_images if control_images else None,
                 controlnets=controlnet_models,
-                mode=mode,
                 ip_adapter_scale=ip_adapter_scale,
+                mode=mode,
             )
         
         return inpainted_images
