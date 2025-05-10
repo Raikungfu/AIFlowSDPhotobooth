@@ -19,7 +19,7 @@ class RabbitMQReceiver:
         self.channel.queue_declare(queue=self.queue, durable=False, exclusive=False, auto_delete=False)
     
     def start_listening(self):
-        self.channel.basic_consume(queue=self.queue, on_message_callback=self.callback, auto_ack=False)
+        self.channel.basic_consume(queue=self.queue, on_message_callback=self.callback, auto_ack=True)
         print(f"Listening for messages on '{self.queue}'...")
         self.channel.start_consuming()
 
@@ -27,11 +27,11 @@ class RabbitMQReceiver:
     def callback(ch, method, properties, body):
         try:            
             handle_message(ch, method, body)
-            ch.basic_ack(delivery_tag=method.delivery_tag)
+            #ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
             print("Error processing message:", e)
             traceback.print_exc()
-            ch.basic_ack(delivery_tag=method.delivery_tag)
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
 
 def send_response(response):
