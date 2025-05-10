@@ -16,8 +16,8 @@ def process_image(
     background_remover,
     height,
     width,
-    mode, 
-    ip_adapter_scale
+    ip_adapter_scale,
+    mode
 ):
     try:
         optimized_image = align_and_optimize_image(image, "ID Photo" in photo_style)

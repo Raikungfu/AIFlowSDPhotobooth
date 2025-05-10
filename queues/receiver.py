@@ -50,6 +50,7 @@ class RabbitMQReceiver:
                 data["background_remover"],
                 data["height"],
                 data["width"],
+                data["ip_adapter_scale"],
                 data["mode"]
             )
 
