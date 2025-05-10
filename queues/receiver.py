@@ -16,15 +16,14 @@ bucket = initialize_firebase(cred_path, firebaseConfig)
 class RabbitMQReceiver:
     def __init__(self, queue_name, max_workers=3):
         self.queue = queue_name
-        self.max_workers = max_workers
+        params = pika.URLParameters(RABBITMQ_URL)
+        self.connection = pika.BlockingConnection(params)
+        self.channel = self.connection.channel()
+        self.channel.queue_declare(queue=self.queue, durable=False, exclusive=False, auto_delete=False, arguments={"x-message-ttl": 300000})
+        self.channel.basic_qos(prefetch_count=max_workers)
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
-        self.connection = None
-        self.channel = None
 
     def start_listening(self):
-        self.connection = RabbitMQConnection(self.queue)
-        self.channel = self.connection.get_channel()
-        self.channel.basic_qos(prefetch_count=self.max_workers)
         self.channel.basic_consume(queue=self.queue, on_message_callback=self.callback, auto_ack=False)
         print(f"Listening for messages on '{self.queue}' with max {self.executor._max_workers} concurrent workers...")
         self.channel.start_consuming()
