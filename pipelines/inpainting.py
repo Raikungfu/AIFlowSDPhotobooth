@@ -36,8 +36,8 @@ def load_inpainting_controlnet_pipeline(controlnets=None):
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.safety_checker = dummy_checker
         
-        pipeline.to("cpu")
-        #pipeline.to("cuda")
+        pipeline.enable_model_cpu_offload()
+        pipeline.to("cuda")
 
         print(f"Loaded Inpainting with Stable Diffusion 1.5 successfully with controlnets: {controlnets}")
 
@@ -65,8 +65,8 @@ def load_inpainting_pipeline():
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.safety_checker = dummy_checker
         
-        pipeline.to("cpu")
-        #pipeline.to("cuda")
+        pipeline.enable_model_cpu_offload()
+        pipeline.to("cuda")
         
         print("Loaded Inpainting with Stable Diffusion 1.5 successfully")
 
