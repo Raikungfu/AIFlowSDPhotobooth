@@ -7,6 +7,18 @@ import cv2
 from configs.model_paths import MODEL_PATHS
 from pipelines import pipeline_instance
 
+
+def ensure_pil_image(image):
+    if isinstance(image, np.ndarray):
+        return Image.fromarray(image)
+    elif isinstance(image, str):
+        return Image.open(image)
+    elif isinstance(image, Image.Image):
+        return image
+    else:
+        raise ValueError("Unsupported image format for depth processing")
+
+
 def load_zoe_model(device="cuda" if torch.cuda.is_available() else "cpu"):
     image_processor = AutoImageProcessor.from_pretrained(MODEL_PATHS["zoe"], cache_dir="/content/pretrained")
     zoe_model = ZoeDepthForDepthEstimation.from_pretrained(MODEL_PATHS["zoe"], cache_dir="/content/pretrained")
@@ -18,8 +30,7 @@ def load_zoe_model(device="cuda" if torch.cuda.is_available() else "cpu"):
 
 def depth_image(image):
     width, height = image.size
-    if not isinstance(image, np.ndarray):
-        image = np.array(image)
+    image = ensure_pil_image(image)
 
     inputs = pipeline_instance.zoe_image_processor(images=image, return_tensors="pt").to(pipeline_instance.device)
 
